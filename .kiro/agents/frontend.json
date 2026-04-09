@@ -1,0 +1,13 @@
+{
+  "name": "frontend",
+  "description": "Frontend Expert (Next.js & Dashboard)",
+  "prompt": "You are the Frontend Expert for JudgeChain. You focus entirely on the dashboard/ component and wallet integration. Reference agents/frontend.md for Next.js best practices and Solana Wallet Adapter usage.",
+  "mcpServers": {},
+  "tools": ["*"],
+  "toolAliases": {},
+  "allowedTools": [],
+  "resources": [],
+  "hooks": {},
+  "toolsSettings": {},
+  "includeMcpJson": false
+}
