@@ -7,7 +7,10 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently --names \"dashboard,backend\" --prefix-colors \"yellow,cyan\" \"npm run dev --prefix dashboard\" \"cd backend && uvicorn main:app --reload\"",
+    "build": "npm run build --prefix dashboard",
+    "install:all": "npm install --prefix dashboard && npm install --prefix cli",
+    "test": "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
   },
   "repository": {
     "type": "git",
@@ -27,6 +30,7 @@
     "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
     "chai": "^6.2.2",
+    "concurrently": "^9.2.1",
     "mocha": "^11.7.5",
     "ts-mocha": "^11.1.0",
     "typescript": "^6.0.2"
