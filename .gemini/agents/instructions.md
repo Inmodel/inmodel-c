@@ -1,3 +1,8 @@
+---
+name: judgechain-instructions
+description: System-level instructions and persona overview for the JudgeChain project agents.
+---
+
 # Gemini Agent System (JudgeChain)
 
 This directory contains specialized system instructions for using Gemini with the **JudgeChain** project.
