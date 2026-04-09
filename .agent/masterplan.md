@@ -27,15 +27,13 @@ Core Idea:
 
 ## 3. Core Output
 
-A structured `.agent` file that includes:
+A structured `.agent/agents/` multi-agent ecosystem that includes:
 
-* Engineering mindset
-* Solana fundamentals
-* Recommended stack
-* Best practices
-* Common mistakes
-* Hackathon execution strategy
-* Light project guidance
+* Orchestrator (Product Manager / Engineering Lead)
+* Frontend Developer (Next.js, Solana Wallet Adapter)
+* Backend Developer (FastAPI, CLI Tooling)
+* Blockchain Developer (Anchor, Rust)
+* Harkirat-style workflow encoded in each role
 
 ---
 

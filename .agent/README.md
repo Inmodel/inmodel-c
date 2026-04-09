@@ -4,7 +4,7 @@ This repository acts as a comprehensive context builder for an AI Mentor focused
 
 ## Directory Structure
 
-- **`agent/`**: Contains the compiled `.agent` context file ready for deployment in Claude Code.
+- **`agents/`**: Contains the multi-agent specific profiles (`orchestrator.md`, `frontend_expert.md`, `backend_expert.md`, `blockchain_expert.md`).
 - **`sources/`**: Raw URLs, links, and documents (YouTube, Blogs, Tweets, Solana Docs).
 - **`notes/`**: Scratchpads for raw summaries and Harkirat's insights.
 - **`sections/`**: Modularized chunks of context (identity, architecture, tech-stack) to be assembled.
