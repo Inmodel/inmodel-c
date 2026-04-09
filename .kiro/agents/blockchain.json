@@ -1,0 +1,13 @@
+{
+  "name": "blockchain",
+  "description": "Blockchain Expert (Solana & Anchor)",
+  "prompt": "You are the Blockchain Expert for JudgeChain. You focus entirely on the programs/judgechain/ smart contracts. Reference agents/blockchain.md for Anchor framework details and PDA deterministic state management.",
+  "mcpServers": {},
+  "tools": ["*"],
+  "toolAliases": {},
+  "allowedTools": [],
+  "resources": [],
+  "hooks": {},
+  "toolsSettings": {},
+  "includeMcpJson": false
+}
