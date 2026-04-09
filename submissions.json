@@ -1,0 +1,15 @@
+[
+  {
+    "submission_id": "181e180a-5a7a-4f93-b359-ad09dd7f5e63",
+    "problem_id": "defi_dashboard",
+    "wallet": "FHVLbTJfZQDASRm51WP2NPARMdfU6xTnRNgQMaxawxXx",
+    "system_score": {
+      "code_quality": 15,
+      "test_coverage": 2,
+      "deployment_health": 20,
+      "documentation": 0,
+      "custom_criteria": 8,
+      "total": 45
+    }
+  }
+]
