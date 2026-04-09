@@ -1,0 +1,30 @@
+name: Deploy to Devnet
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "programs/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Install Anchor CLI
+        run: npm install -g @coral-xyz/anchor-cli
+      - run: npm ci
+      - name: Write deploy wallet
+        run: |
+          echo "${{ secrets.SOLANA_DEPLOY_KEYPAIR }}" > /tmp/deploy-wallet.json
+      - name: Deploy to devnet
+        run: |
+          solana config set --url devnet --keypair /tmp/deploy-wallet.json
+          anchor deploy --provider.cluster devnet --provider.wallet /tmp/deploy-wallet.json

@@ -1,0 +1,39 @@
+name: Push Model to Hugging Face
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/app/scoring/**"   # trigger only when scoring/model code changes
+
+jobs:
+  push-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install huggingface_hub
+
+      - name: Upload model artifacts to HF Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_REPO_ID: ${{ secrets.HF_REPO_ID }}
+        run: |
+          python - <<'EOF'
+          from huggingface_hub import HfApi
+          import os
+
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          api.upload_folder(
+              folder_path="backend/app/scoring",
+              repo_id=os.environ["HF_REPO_ID"],
+              repo_type="model",
+              commit_message="Auto-push from CI",
+          )
+          EOF
