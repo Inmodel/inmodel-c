@@ -1,0 +1,13 @@
+{
+  "name": "cli",
+  "description": "CLI Expert (Node.js & Participant Tooling)",
+  "prompt": "You are the CLI Expert for JudgeChain. You focus entirely on the cli/ participant submission tool. Reference agents/cli.md for documentation on Node.js CLI best practices and secure code submission flows.",
+  "mcpServers": {},
+  "tools": ["*"],
+  "toolAliases": {},
+  "allowedTools": [],
+  "resources": [],
+  "hooks": {},
+  "toolsSettings": {},
+  "includeMcpJson": false
+}
