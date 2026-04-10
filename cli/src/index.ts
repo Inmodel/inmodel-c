@@ -5,6 +5,7 @@ import axios from 'axios';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { execSync } from 'child_process';
 import { Keypair, Connection, clusterApiUrl } from '@solana/web3.js';
 import nacl from 'tweetnacl';
 import chalk from 'chalk';
@@ -17,6 +18,7 @@ const GITHUB_URL_RE = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\/)?$/;
 const URL_RE = /^https?:\/\/.+\..+/;
 const API_URL = process.env.JUDGECHAIN_API_URL ?? 'http://localhost:8000/api/v1';
 const DEFAULT_KEYPAIR = path.join(os.homedir(), '.config', 'solana', 'id.json');
+const CONFIG_FILE = '.judgenod.json';
 
 type Network = 'devnet' | 'mainnet' | 'localnet';
 
@@ -25,6 +27,42 @@ const NETWORKS: Record<Network, string> = {
   mainnet: clusterApiUrl('mainnet-beta'),
   localnet: 'http://127.0.0.1:8899',
 };
+
+interface JudgeNodConfig {
+  problem?: string;
+  repo?: string;
+  deployment?: string;
+}
+
+function loadConfig(): JudgeNodConfig {
+  if (fs.existsSync(CONFIG_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+function saveConfig(config: JudgeNodConfig) {
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+}
+
+function getGitOriginUrl(): string {
+  try {
+    const url = execSync('git config --get remote.origin.url', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    if (url.startsWith('git@github.com:')) {
+      return url.replace('git@github.com:', 'https://github.com/').replace(/\.git$/, '');
+    }
+    if (url.endsWith('.git')) {
+      return url.replace(/\.git$/, '');
+    }
+    return url;
+  } catch (e) {
+    return '';
+  }
+}
 
 interface SubmitOptions {
   problem: string;
@@ -131,37 +169,49 @@ function getConnection(network: string): Connection {
 }
 
 program
-  .name('judgechain')
-  .description('CLI to submit Hackathon projects to JudgeChain on Solana')
+  .name('judgenod')
+  .description('CLI to submit Hackathon projects to JudgeNod on Solana')
   .version('1.0.0');
 
 program.command('submit')
-  .description('Submit a project to JudgeChain')
-  .requiredOption('-p, --problem <id>', 'Problem statement ID')
-  .requiredOption('-r, --repo <url>', 'GitHub repository URL')
-  .requiredOption('-d, --deployment <url>', 'Live deployment URL')
+  .description('Submit a project to JudgeNod')
+  .option('-p, --problem <id>', 'Problem statement ID')
+  .option('-r, --repo <url>', 'GitHub repository URL')
+  .option('-d, --deployment <url>', 'Live deployment URL')
   .option('-c, --coverage <percent>', 'Manually reported test coverage (0-100)', '0')
   .option('-l, --lint <score>', 'Manually reported linting score (0-18)', '0')
   .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
   .option('-n, --network <name>', 'Solana network: devnet | mainnet | localnet', 'devnet')
-  .action(async (options: SubmitOptions) => {
-    p.intro(`${chalk.bgCyan.black(' JudgeChain ')} ${chalk.dim('Submission Tool')}`);
-    validate(options);
+  .action(async (options: any) => {
+    p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Submission Tool')}`);
+    
+    const config = loadConfig();
+    const finalOptions: SubmitOptions = {
+      problem: options.problem || config.problem || '',
+      repo: options.repo || config.repo || '',
+      deployment: options.deployment || config.deployment || '',
+      coverage: options.coverage,
+      lint: options.lint,
+      keypair: options.keypair,
+      network: options.network,
+    };
 
-    const connection = getConnection(options.network);
-    const keypair = loadKeypair(options.keypair);
+    validate(finalOptions);
+
+    const connection = getConnection(finalOptions.network);
+    const keypair = loadKeypair(finalOptions.keypair);
     const wallet = keypair.publicKey.toBase58();
 
     p.log.info(`${chalk.cyan('Wallet')}  ${chalk.dim(wallet)}`);
-    p.log.info(`${chalk.cyan('Network')} ${chalk.dim(options.network)}`);
+    p.log.info(`${chalk.cyan('Network')} ${chalk.dim(finalOptions.network)}`);
 
     const payload = {
-      problem_id: options.problem,
-      repo_url: options.repo,
-      deployment_url: options.deployment,
+      problem_id: finalOptions.problem,
+      repo_url: finalOptions.repo,
+      deployment_url: finalOptions.deployment,
       participant_wallet: wallet,
-      reported_test_coverage_percent: parseFloat(options.coverage || '0'),
-      reported_linting_score: parseFloat(options.lint || '0'),
+      reported_test_coverage_percent: parseFloat(finalOptions.coverage || '0'),
+      reported_linting_score: parseFloat(finalOptions.lint || '0'),
     };
 
     const payloadStr = JSON.stringify(payload);
@@ -170,7 +220,7 @@ program.command('submit')
     ).toString('base64');
 
     const s = p.spinner();
-    s.start('Analyzing repository and submitting to JudgeChain');
+    s.start('Analyzing repository and submitting to JudgeNod');
 
     try {
       const { data } = await axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
@@ -183,7 +233,7 @@ program.command('submit')
 
       s.stop('Submission verified');
       displayScore(data);
-      p.outro(`${chalk.green('✔')} Successfully submitted to JudgeChain!`);
+      p.outro(`${chalk.green('✔')} Successfully submitted to JudgeNod!`);
     } catch (err) {
       s.stop('Submission failed');
       const msg = axios.isAxiosError(err)
@@ -199,7 +249,7 @@ program.command('status')
   .requiredOption('-t, --tx <hash>', 'Transaction signature hash')
   .option('-n, --network <name>', 'Solana network: devnet | mainnet | localnet', 'devnet')
   .action(async (options: StatusOptions) => {
-    p.intro(`${chalk.bgCyan.black(' JudgeChain ')} ${chalk.dim('Transaction Status')}`);
+    p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Transaction Status')}`);
     const connection = getConnection(options.network);
     const s = p.spinner();
     s.start(`Fetching tx on ${options.network}`);
@@ -237,7 +287,7 @@ program.command('leaderboard')
   .description('View the current leaderboard for a problem')
   .option('-p, --problem <id>', 'Problem statement ID')
   .action(async (options: any) => {
-    p.intro(`${chalk.bgCyan.black(' JudgeChain ')} ${chalk.dim('Leaderboard')}`);
+    p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Leaderboard')}`);
     let problemId = options.problem;
 
     if (!problemId) {
@@ -317,7 +367,10 @@ program.command('init')
   .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
   .option('-n, --network <name>', 'Solana network: devnet | mainnet | localnet', 'devnet')
   .action(async (options: any) => {
-    p.intro(`${chalk.bgCyan.black(' JudgeChain ')} ${chalk.dim('Interactive Submission')}`);
+    p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Interactive Submission')}`);
+
+    const existingConfig = loadConfig();
+    const gitOrigin = getGitOriginUrl();
 
     let problemChoices: any[] = [];
     try {
@@ -337,21 +390,25 @@ program.command('init')
             ? p.select({
                 message: 'Select the Problem Statement:',
                 options: problemChoices,
+                initialValue: existingConfig.problem,
               })
             : p.text({
                 message: 'Enter Problem ID:',
+                initialValue: existingConfig.problem,
                 validate: (v) => (!v || !v.trim() ? 'Problem ID is required' : undefined),
               }),
         repo: () =>
           p.text({
             message: 'GitHub Repository URL:',
             placeholder: 'https://github.com/user/repo',
+            initialValue: existingConfig.repo || gitOrigin,
             validate: (v) => (!v || !GITHUB_URL_RE.test(v) ? 'Invalid GitHub URL' : undefined),
           }),
         deployment: () =>
           p.text({
             message: 'Live Deployment URL:',
             placeholder: 'https://myapp.vercel.app',
+            initialValue: existingConfig.deployment,
             validate: (v) => (!v || !URL_RE.test(v) ? 'Invalid URL' : undefined),
           }),
         coverage: () =>
@@ -383,6 +440,13 @@ program.command('init')
       }
     );
 
+    saveConfig({
+      problem: group.problem as string,
+      repo: group.repo,
+      deployment: group.deployment,
+    });
+    p.log.success(`Saved configuration to ${chalk.cyan(CONFIG_FILE)}`);
+
     const connection = getConnection(options.network);
     const keypair = loadKeypair(options.keypair);
     const wallet = keypair.publicKey.toBase58();
@@ -405,7 +469,7 @@ program.command('init')
     ).toString('base64');
 
     const s = p.spinner();
-    s.start('Analyzing repository and submitting to JudgeChain');
+    s.start('Analyzing repository and submitting to JudgeNod');
 
     try {
       const { data } = await axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
@@ -418,7 +482,7 @@ program.command('init')
 
       s.stop('Submission verified');
       displayScore(data);
-      p.outro(`${chalk.green('✔')} Successfully submitted to JudgeChain!`);
+      p.outro(`${chalk.green('✔')} Successfully submitted to JudgeNod!`);
     } catch (err) {
       s.stop('Submission failed');
       const msg = axios.isAxiosError(err)
