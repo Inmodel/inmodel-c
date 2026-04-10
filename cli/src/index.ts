@@ -8,6 +8,9 @@ import os from 'os';
 import path from 'path';
 import { Keypair, Connection, clusterApiUrl } from '@solana/web3.js';
 import nacl from 'tweetnacl';
+import chalk from 'chalk';
+import inquirer from 'inquirer';
+import Table from 'cli-table3';
 
 const program = new Command();
 
@@ -53,6 +56,26 @@ interface ScoreResponse {
   problem_id: string;
   wallet: string;
   system_score: SystemScore;
+}
+
+function displayScore(data: ScoreResponse): void {
+  const table = new Table({
+    head: [chalk.cyan('Criteria'), chalk.cyan('Score')],
+    colWidths: [20, 10]
+  });
+
+  table.push(
+    ['Code Quality', data.system_score.code_quality],
+    ['Test Coverage', data.system_score.test_coverage],
+    ['Deployment', data.system_score.deployment_health],
+    ['Documentation', data.system_score.documentation],
+    ['Custom', data.system_score.custom_criteria],
+    [chalk.bold('Total'), chalk.bold.green(data.system_score.total)]
+  );
+
+  console.log('\n' + chalk.bold('📊 Submission Results'));
+  console.log(chalk.gray(`Submission ID: ${data.submission_id}`));
+  console.log(table.toString() + '\n');
 }
 
 function validate(options: SubmitOptions): void {
@@ -125,8 +148,9 @@ program.command('submit')
 
     const keypair = loadKeypair(options.keypair);
     const wallet = keypair.publicKey.toBase58();
-    console.log(`  Wallet:  ${wallet}`);
-    console.log(`  Network: ${options.network}`);
+    console.log(chalk.blue(`\n🚀 Submitting Project`));
+    console.log(`  ${chalk.gray('Wallet:')}  ${chalk.white(wallet)}`);
+    console.log(`  ${chalk.gray('Network:')} ${chalk.white(options.network)}`);
 
     const payload = {
       problem_id: options.problem,
@@ -142,7 +166,7 @@ program.command('submit')
       nacl.sign.detached(Buffer.from(payloadStr), keypair.secretKey)
     ).toString('base64');
 
-    const spinner = ora('Submitting to JudgeChain...').start();
+    const spinner = ora('Analyzing and submitting to JudgeChain...').start();
 
     try {
       const { data } = await axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
@@ -153,20 +177,14 @@ program.command('submit')
         },
       });
 
-      spinner.succeed('Submission successful!');
-      console.log(`  Submission ID: ${data.submission_id}`);
-      console.log(`  Total Score:   ${data.system_score.total}`);
-      console.log(`  Breakdown:`);
-      console.log(`    - Code Quality:   ${data.system_score.code_quality}`);
-      console.log(`    - Test Coverage:  ${data.system_score.test_coverage}`);
-      console.log(`    - Deployment:     ${data.system_score.deployment_health}`);
-      console.log(`    - Documentation:  ${data.system_score.documentation}`);
+      spinner.succeed(chalk.green('Submission successful!'));
+      displayScore(data);
     } catch (err) {
-      spinner.fail('Submission failed.');
+      spinner.fail(chalk.red('Submission failed.'));
       const msg = axios.isAxiosError(err)
         ? (err.response?.data?.detail || err.message || err.code || 'Could not connect to backend')
         : 'Could not connect to backend';
-      console.error(`Error: ${msg}`);
+      console.error(`${chalk.red('Error:')} ${msg}`);
       process.exit(1);
     }
   });
@@ -197,6 +215,186 @@ program.command('status')
     } catch (err) {
       spinner.fail('Failed to fetch transaction.');
       console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
+  });
+
+program.command('leaderboard')
+  .description('View the current leaderboard for a problem')
+  .option('-p, --problem <id>', 'Problem statement ID')
+  .action(async (options: any) => {
+    let problemId = options.problem;
+
+    if (!problemId) {
+      try {
+        const { data: problems } = await axios.get(`${API_URL}/problems`);
+        const choices = Object.entries(problems).map(([id, info]: [string, any]) => ({
+          name: `${chalk.white(id)}: ${chalk.gray(info.title)}`,
+          value: id
+        }));
+
+        if (choices.length === 0) {
+          console.log(chalk.yellow('No problems available.'));
+          return;
+        }
+
+        const answers = await inquirer.prompt([{
+          type: 'list',
+          name: 'problem',
+          message: 'Select a problem to view leaderboard:',
+          choices
+        }]);
+        problemId = answers.problem;
+      } catch (err) {
+        console.error(chalk.red('Error: Could not fetch problems from backend. Please provide --problem <id>.'));
+        return;
+      }
+    }
+
+    const spinner = ora(`Fetching leaderboard for ${problemId}...`).start();
+
+    try {
+      const { data } = await axios.get(`${API_URL}/leaderboard?problem_id=${problemId}`);
+      spinner.stop();
+
+      if (!data || data.length === 0) {
+        console.log(chalk.yellow('\nNo submissions found for this problem yet. Be the first! 🚀'));
+        return;
+      }
+
+      console.log(chalk.bold.cyan(`\n🏆 Leaderboard: ${problemId}`));
+      const table = new Table({
+        head: [chalk.cyan('Rank'), chalk.cyan('Wallet'), chalk.cyan('Total Score')],
+        colWidths: [8, 48, 15]
+      });
+
+      data.slice(0, 10).forEach((entry: any, index: number) => {
+        const wallet = entry.wallet;
+        const score = entry.system_score.total;
+        const rank = index + 1;
+        table.push([
+          rank === 1 ? '🥇 1' : rank === 2 ? '🥈 2' : rank === 3 ? '🥉 3' : rank,
+          chalk.gray(wallet),
+          chalk.bold.green(score)
+        ]);
+      });
+
+      console.log(table.toString() + '\n');
+    } catch (err) {
+      spinner.fail(chalk.red('Failed to fetch leaderboard.'));
+      console.error(chalk.red(`Error: ${err instanceof Error ? err.message : String(err)}`));
+    }
+  });
+
+program.command('init')
+  .description('Interactive guide to submit your project')
+  .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
+  .option('-n, --network <name>', 'Solana network: devnet | mainnet | localnet', 'devnet')
+  .action(async (options: any) => {
+    console.log(chalk.cyan.bold('\nWelcome to JudgeChain! 🏆'));
+    console.log(chalk.gray('Let\'s set up your submission.\n'));
+
+    let problemChoices: any[] = [];
+    try {
+      const { data: problems } = await axios.get(`${API_URL}/problems`);
+      problemChoices = Object.entries(problems).map(([id, info]: [string, any]) => ({
+        name: `${chalk.white(id)}: ${chalk.gray(info.title)}`,
+        value: id
+      }));
+    } catch (err) {
+      console.log(chalk.yellow('⚠️  Could not fetch problem list from backend. Entering manual ID.\n'));
+    }
+
+    const answers = await inquirer.prompt([
+      {
+        type: problemChoices.length > 0 ? 'list' : 'input',
+        name: 'problem',
+        message: 'Select or enter the Problem Statement ID:',
+        choices: problemChoices,
+        validate: (input: string) => input.trim() ? true : 'Problem ID is required'
+      },
+      {
+        type: 'input',
+        name: 'repo',
+        message: 'Enter your GitHub Repository URL:',
+        validate: (input: string) => GITHUB_URL_RE.test(input) ? true : 'Must be a valid GitHub URL'
+      },
+      {
+        type: 'input',
+        name: 'deployment',
+        message: 'Enter your Live Deployment URL:',
+        validate: (input: string) => URL_RE.test(input) ? true : 'Must be a valid URL'
+      },
+      {
+        type: 'input',
+        name: 'coverage',
+        message: 'Reported Test Coverage (0-100):',
+        default: '0',
+        validate: (input: string) => !isNaN(parseFloat(input)) && parseFloat(input) >= 0 && parseFloat(input) <= 100 ? true : 'Must be a number between 0 and 100'
+      },
+      {
+        type: 'input',
+        name: 'lint',
+        message: 'Reported Linting Score (0-18):',
+        default: '0',
+        validate: (input: string) => !isNaN(parseFloat(input)) && parseFloat(input) >= 0 && parseFloat(input) <= 18 ? true : 'Must be a number between 0 and 18'
+      }
+    ]);
+
+    // Use existing submit logic by calling it with answers
+    const submitOptions: SubmitOptions = {
+      problem: answers.problem,
+      repo: answers.repo,
+      deployment: answers.deployment,
+      coverage: answers.coverage,
+      lint: answers.lint,
+      keypair: options.keypair,
+      network: options.network as Network
+    };
+
+    // Trigger the submit logic manually or just duplicate minimal part
+    // To keep it clean, let's just trigger the same logic flow
+    const connection = getConnection(submitOptions.network);
+    const keypair = loadKeypair(submitOptions.keypair);
+    const wallet = keypair.publicKey.toBase58();
+
+    console.log(chalk.blue(`\n🚀 Submitting Project`));
+    console.log(`  ${chalk.gray('Wallet:')}  ${chalk.white(wallet)}`);
+    console.log(`  ${chalk.gray('Network:')} ${chalk.white(submitOptions.network)}`);
+
+    const payload = {
+      problem_id: submitOptions.problem,
+      repo_url: submitOptions.repo,
+      deployment_url: submitOptions.deployment,
+      participant_wallet: wallet,
+      reported_test_coverage_percent: parseFloat(submitOptions.coverage || '0'),
+      reported_linting_score: parseFloat(submitOptions.lint || '0'),
+    };
+
+    const payloadStr = JSON.stringify(payload);
+    const signature = Buffer.from(
+      nacl.sign.detached(Buffer.from(payloadStr), keypair.secretKey)
+    ).toString('base64');
+
+    const spinner = ora('Analyzing and submitting to JudgeChain...').start();
+
+    try {
+      const { data } = await axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-signature': signature,
+          'x-network': submitOptions.network
+        },
+      });
+
+      spinner.succeed(chalk.green('Submission successful!'));
+      displayScore(data);
+    } catch (err) {
+      spinner.fail(chalk.red('Submission failed.'));
+      const msg = axios.isAxiosError(err)
+        ? (err.response?.data?.detail || err.message || err.code || 'Could not connect to backend')
+        : 'Could not connect to backend';
+      console.error(`${chalk.red('Error:')} ${msg}`);
       process.exit(1);
     }
   });
