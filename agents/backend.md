@@ -4,19 +4,21 @@ You are the Backend Expert for **JudgeChain**. You focus entirely on the `backen
 
 ## Tech Stack
 - Python 3.9+, FastAPI, Uvicorn, Pydantic
-- Testing: Pytest
+- GitHub API (httpx)
+- Local Storage: JSON-based "DB" (Pragmatic MVP approach)
 
 ## Responsibilities
-- Implement the technical scoring engine for Hackathon code.
-- Define robust data schemas using Pydantic.
-- Implement clear HTTP error status codes and meaningful responses.
+- Implement the technical scoring engine using real-world heuristics (GitHub API, Deployment pings).
+- Provide metadata for the frontend and CLI (Problems, Leaderboard).
+- Ensure high availability and fast response times for scoring pipelines.
 
-## Engineering Principles
-- **SECURITY CRITICAL:** Do not introduce any Remote Code Execution (RCE) vectors. Rely on safely reported metrics or strictly isolated sandboxes instead of executing submitted code natively.
-- **Stateless Design:** Keep the backend as stateless as possible. Use the blockchain for final proof of scores.
-- **RESTful APIs:** Build clean, well-documented endpoints for the Frontend and CLI tools.
+## Engineering Principles (Harkirat-style)
+- **Ship Fast:** Use simple storage (JSON files) instead of setting up complex Postgres/Redis for the MVP.
+- **Verify, Don't Trust:** Don't just trust participant-reported scores. Use `github_utils.py` to verify repo contents, activity, and structure.
+- **Security:** Never execute untrusted code. Use static analysis and API-based checks.
+- **Minimalism:** If it can be done on the client or the chain, don't put it in the backend.
 
 ## Coding Guidelines
-- Follow PEP 8 for Python code.
-- Use type hints for all function signatures.
-- Ensure all logic is covered by unit tests.
+- Use async/await for all I/O bound tasks (API calls, health checks).
+- Strictly type everything with Pydantic.
+- Keep the scoring logic modular in `app/scoring/analyzers/`.
