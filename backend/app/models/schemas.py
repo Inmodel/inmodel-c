@@ -1,15 +1,28 @@
-from pydantic import BaseModel, HttpUrl, Field
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict
+
+
+class ProblemInput(BaseModel):
+    id: str
+    title: str
+    description: str
+
+
+class HackathonInput(BaseModel):
+    name: str
+    organizer: str
+    pubkey: str
+    problems: List[ProblemInput]
+
 
 class SubmissionInput(BaseModel):
     problem_id: str
     participant_wallet: str
     repo_url: str = Field(..., description="GitHub repository URL")
     deployment_url: str = Field(..., description="Live deployment URL")
-    
-    # Mock parameters for MVP as per user instructions
     reported_test_coverage_percent: float = Field(default=0.0, ge=0.0, le=100.0)
     reported_linting_score: float = Field(default=0.0, ge=0.0, le=18.0)
+
 
 class SystemScore(BaseModel):
     code_quality: int
@@ -19,8 +32,19 @@ class SystemScore(BaseModel):
     custom_criteria: int
     total: int
 
+
 class ScoreResponse(BaseModel):
     submission_id: str
     problem_id: str
     wallet: str
     system_score: SystemScore
+    judge_score: Optional[int] = None
+    final_score: Optional[int] = None
+    tx_hash: Optional[str] = None
+    status: str = "scored"
+
+
+class JudgeScoreInput(BaseModel):
+    submission_id: str
+    judge_score: int = Field(..., ge=0, le=30)
+    judge_wallet: str

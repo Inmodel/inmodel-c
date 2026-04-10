@@ -1,0 +1,14 @@
+{
+  "defi-swap-01": {
+    "title": "Optimized Token Swap",
+    "description": "Implement a constant-product AMM with minimized slippage."
+  },
+  "nft-marketplace-02": {
+    "title": "Royalty-Enforced NFT Market",
+    "description": "Create a marketplace that strictly enforces Metaplex royalties."
+  },
+  "governance-dao-03": {
+    "title": "Quadratically Weighted DAO",
+    "description": "Build a voting system using quadratic weighting principles."
+  }
+}

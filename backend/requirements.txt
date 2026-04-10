@@ -19,3 +19,5 @@ typing_extensions==4.15.0
 uvicorn==0.39.0
 pynacl==1.5.0
 solders==0.21.0
+solana==0.35.2
+anchorpy==0.20.1
