@@ -1,5 +1,8 @@
 use anchor_lang::prelude::*;
-use mpl_core::instructions::CreateV1CpiBuilder;
+use mpl_core::{
+    instructions::{CreateCollectionV1CpiBuilder, CreateV1CpiBuilder},
+    types::{Plugin, PluginAuthorityPair, PermanentFreezeDelegate},
+};
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
@@ -12,6 +15,26 @@ pub mod judgechain {
         hackathon.organizer = ctx.accounts.organizer.key();
         hackathon.name = name;
         hackathon.is_active = true;
+        Ok(())
+    }
+
+    pub fn create_collection(
+        ctx: Context<CreateCollection>,
+        name: String,
+        uri: String,
+    ) -> Result<()> {
+        CreateCollectionV1CpiBuilder::new(&ctx.accounts.core_program.to_account_info())
+            .collection(&ctx.accounts.collection.to_account_info())
+            .payer(&ctx.accounts.payer.to_account_info())
+            .update_authority(Some(&ctx.accounts.hackathon.to_account_info()))
+            .name(name)
+            .uri(uri)
+            .invoke_signed(&[&[
+                b"hackathon",
+                ctx.accounts.hackathon.organizer.as_ref(),
+                &[ctx.bumps.hackathon],
+            ]])?;
+
         Ok(())
     }
 
@@ -51,23 +74,34 @@ pub mod judgechain {
         metadata_uri: String,
         name: String,
     ) -> Result<()> {
+        // Enforce basic minimum score threshold
+        require!(ctx.accounts.score_hash.final_score >= 50, JudgeChainError::ScoreTooLow);
+
         let certificate = &mut ctx.accounts.certificate;
         let clock = Clock::get()?;
         certificate.submission_id = ctx.accounts.submission.key();
         certificate.metadata_uri = metadata_uri.clone();
         certificate.minted_at = clock.unix_timestamp;
 
+        // Freeze delegate plugin for soulbound
+        let plugins = vec![PluginAuthorityPair {
+            plugin: Plugin::PermanentFreezeDelegate(PermanentFreezeDelegate { frozen: true }),
+            authority: None, // No one can unfreeze it
+        }];
+
         CreateV1CpiBuilder::new(&ctx.accounts.core_program.to_account_info())
             .asset(&ctx.accounts.asset.to_account_info())
-            .authority(Some(&ctx.accounts.certificate.to_account_info()))
+            .collection(Some(&ctx.accounts.collection.to_account_info()))
+            .authority(Some(&ctx.accounts.hackathon.to_account_info()))
             .payer(&ctx.accounts.payer.to_account_info())
             .owner(Some(&ctx.accounts.participant.to_account_info()))
             .name(name)
             .uri(metadata_uri)
+            .plugins(plugins)
             .invoke_signed(&[&[
-                b"certificate",
-                ctx.accounts.submission.key().as_ref(),
-                &[ctx.bumps.certificate],
+                b"hackathon",
+                ctx.accounts.hackathon.organizer.as_ref(),
+                &[ctx.bumps.hackathon],
             ]])?;
 
         Ok(())
@@ -90,6 +124,26 @@ pub struct CreateHackathon<'info> {
         bump
     )]
     pub hackathon: Account<'info, Hackathon>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CreateCollection<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    #[account(mut)]
+    pub collection: Signer<'info>,
+
+    #[account(
+        seeds = [b"hackathon", hackathon.organizer.as_ref()],
+        bump
+    )]
+    pub hackathon: Account<'info, Hackathon>,
+
+    /// CHECK: Metaplex Core Program
+    pub core_program: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -143,6 +197,12 @@ pub struct IssueCertificate<'info> {
     pub submission: Account<'info, Submission>,
 
     #[account(
+        seeds = [b"score", submission.key().as_ref()],
+        bump
+    )]
+    pub score_hash: Account<'info, ScoreHash>,
+
+    #[account(
         init,
         payer = payer,
         space = 8 + 32 + 4 + 200 + 8,
@@ -153,6 +213,16 @@ pub struct IssueCertificate<'info> {
 
     #[account(mut)]
     pub asset: Signer<'info>,
+
+    #[account(mut)]
+    /// CHECK: Metaplex Core Collection
+    pub collection: UncheckedAccount<'info>,
+
+    #[account(
+        seeds = [b"hackathon", hackathon.organizer.as_ref()],
+        bump
+    )]
+    pub hackathon: Account<'info, Hackathon>,
 
     /// CHECK: Metaplex Core Program
     pub core_program: UncheckedAccount<'info>,
@@ -200,4 +270,6 @@ pub struct Certificate {
 pub enum JudgeChainError {
     #[msg("Score must be between 0 and 100")]
     InvalidScore,
+    #[msg("Score is too low to receive a certificate")]
+    ScoreTooLow,
 }

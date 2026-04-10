@@ -22,37 +22,102 @@ describe("judgechain-nft", () => {
       return;
     }
     // 1. Initial State Setup
+    const organizer = provider.wallet;
     const participant = Keypair.generate();
-    const hackathon = Keypair.generate();
-    const submission = Keypair.generate();
+    const collection = Keypair.generate();
     const asset = Keypair.generate();
 
-    // 2. Initialize Hackathon Account (Mock)
-    // In a real test, we would call an 'initialize_hackathon' instruction
+    const hackathonName = "Solana Master Builders Phase 1";
     
-    // 3. Issue Certificate
-    const metadataUri = "https://arweave.net/achievement-data.json";
-    const name = "JudgeChain Master Builder #1";
-
-    const [certificatePda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("certificate"), submission.publicKey.toBuffer()],
+    // Find PDAs
+    const [hackathonPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("hackathon"), organizer.publicKey.toBuffer()],
       program.programId
     );
 
-    // This would test the newly created 'issue_certificate' instruction
-    // Note: We need the actual Core Program ID for a real integration test
+    const [submissionPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("submission"), hackathonPda.toBuffer(), participant.publicKey.toBuffer()],
+      program.programId
+    );
+
+    const [scorePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("score"), submissionPda.toBuffer()],
+      program.programId
+    );
+
+    const [certificatePda] = PublicKey.findProgramAddressSync(
+      [Buffer.from("certificate"), submissionPda.toBuffer()],
+      program.programId
+    );
+
     const CORE_PROGRAM_ID = new PublicKey("CoRENoZunvK2Asi40wn-Dummies-ID-For-Test");
 
     try {
-        const tx = await program.methods
-          .issueCertificate(metadataUri, name)
+        // 2. Initialize Hackathon Account
+        await program.methods
+          .createHackathon(hackathonName)
           .accounts({
-            payer: provider.wallet.publicKey,
+            organizer: organizer.publicKey,
+            hackathon: hackathonPda,
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .rpc();
+
+        // 3. Create Collection (NFT Grouping)
+        await program.methods
+          .createCollection("Master Builders Certificates", "https://arweave.net/collection.json")
+          .accounts({
+            payer: organizer.publicKey,
+            collection: collection.publicKey,
+            hackathon: hackathonPda,
+            coreProgram: CORE_PROGRAM_ID,
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .signers([collection])
+          .rpc();
+
+        // 4. Create Submission & Score
+        await program.methods
+          .createSubmission("problem_1", "https://github.com/test/repo", "https://deploy.test")
+          .accounts({
             participant: participant.publicKey,
-            submission: submission.publicKey,
+            hackathon: hackathonPda,
+            submission: submissionPda,
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .signers([participant])
+          .rpc();
+
+        // Score must be >= 50 for certificate to issue
+        const judge = Keypair.generate(); // Simulate a judge
+        await program.methods
+          .scoreSubmission(80, 90, "ipfs://cid-score")
+          .accounts({
+            judge: judge.publicKey,
+            submission: submissionPda,
+            scoreHash: scorePda,
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .signers([judge])
+          .rpc();
+
+        // 5. Issue soulbound certificate
+        const metadataUri = "https://arweave.net/achievement-data.json";
+        const certName = "JudgeChain Master Builder #1";
+
+        const tx = await program.methods
+          .issueCertificate(metadataUri, certName)
+          .accounts({
+            payer: organizer.publicKey,
+            participant: participant.publicKey,
+            submission: submissionPda,
+            scoreHash: scorePda,
             certificate: certificatePda,
             asset: asset.publicKey,
+            collection: collection.publicKey,
+            hackathon: hackathonPda,
             coreProgram: CORE_PROGRAM_ID,
+            systemProgram: anchor.web3.SystemProgram.programId,
           })
           .signers([asset])
           .rpc();
