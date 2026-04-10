@@ -1,31 +1,35 @@
 "use client";
+import Link from "next/link";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 export function Navbar() {
   return (
-    <nav
-      className="flex items-center justify-between px-6 py-3 border-b text-sm"
-      style={{ borderColor: "var(--border)", background: "var(--background)" }}
-    >
+    <nav className="flex items-center justify-between px-6 py-3 border-b border-border bg-background text-sm">
       <div className="flex items-center gap-6">
-        <a href="/" className="font-semibold tracking-tight text-base" style={{ color: "var(--foreground)" }}>
+        <Link href="/" className="font-semibold tracking-tight text-base text-foreground">
           ▲ JudgeChain
-        </a>
-        <div className="hidden md:flex gap-5" style={{ color: "var(--muted)" }}>
-          <a href="/submit" className="hover:opacity-70 transition-opacity">Submit</a>
-          <a href="/leaderboard" className="hover:opacity-70 transition-opacity">Leaderboard</a>
+        </Link>
+        <div className="hidden md:flex gap-5 text-muted">
+          <Link href="/submit" className="hover:text-accent transition-colors">
+            Submit
+          </Link>
+          <Link href="/leaderboard" className="hover:text-accent transition-colors">
+            Leaderboard
+          </Link>
+          <Link href="/profile" className="hover:text-accent transition-colors">
+            My Projects
+          </Link>
+          <Link href="/judge" className="hover:text-accent transition-colors">
+            Judge
+          </Link>
+          <Link href="/organizer" className="hover:text-accent transition-colors">
+            Organizer
+          </Link>
         </div>
       </div>
-      <WalletMultiButton
-        style={{
-          background: "var(--accent)",
-          color: "#fff",
-          borderRadius: "6px",
-          fontSize: "13px",
-          height: "34px",
-          padding: "0 14px",
-        }}
-      />
+      <div className="wallet-adapter-custom">
+        <WalletMultiButton />
+      </div>
     </nav>
   );
 }

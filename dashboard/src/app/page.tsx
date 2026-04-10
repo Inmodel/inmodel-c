@@ -1,47 +1,40 @@
 import { Navbar } from "./components/Navbar";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "var(--background)", color: "var(--foreground)" }}>
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
 
       {/* Hero */}
       <main className="flex flex-col items-center justify-center flex-1 text-center px-6 py-24 gap-6">
-        <div
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border"
-          style={{ borderColor: "var(--card-border)", color: "var(--muted)", background: "var(--card)" }}
-        >
-          <span
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: "var(--accent)" }}
-          />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border border-card-border bg-card text-muted">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent" />
           Live on Solana Devnet
         </div>
 
-        <h1 className="text-5xl font-bold tracking-tight max-w-2xl leading-tight" style={{ color: "var(--foreground)" }}>
+        <h1 className="text-5xl font-bold tracking-tight max-w-2xl leading-tight text-foreground">
           Tamper-proof judging,{" "}
-          <span style={{ color: "var(--accent)" }}>on-chain.</span>
+          <span className="text-accent">on-chain.</span>
         </h1>
 
-        <p className="text-lg max-w-md" style={{ color: "var(--muted)" }}>
+        <p className="text-lg max-w-md text-muted">
           Submit your project, get scored transparently, and earn a verifiable NFT certificate — all on Solana.
         </p>
 
         <div className="flex gap-3 mt-2">
-          <a
+          <Link
             href="/submit"
-            className="px-5 py-2.5 rounded-md text-sm font-semibold transition-opacity hover:opacity-80"
-            style={{ background: "var(--accent)", color: "#fff" }}
+            className="px-5 py-2.5 rounded-md text-sm font-semibold transition-opacity hover:opacity-80 bg-accent text-white"
           >
             Submit Project
-          </a>
-          <a
+          </Link>
+          <Link
             href="/leaderboard"
-            className="px-5 py-2.5 rounded-md text-sm font-semibold border transition-colors hover:opacity-70"
-            style={{ borderColor: "var(--border)", color: "var(--foreground)", background: "var(--card)" }}
+            className="px-5 py-2.5 rounded-md text-sm font-semibold border border-border bg-card text-foreground transition-colors hover:bg-border/10"
           >
             View Leaderboard →
-          </a>
+          </Link>
         </div>
       </main>
 
@@ -55,25 +48,21 @@ export default function Home() {
           ].map((f) => (
             <div
               key={f.title}
-              className="rounded-xl p-5 border"
-              style={{ background: "var(--card)", borderColor: "var(--card-border)" }}
+              className="rounded-xl p-5 border border-card-border bg-card"
             >
-              <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--foreground)" }}>{f.title}</h3>
-              <p className="text-sm" style={{ color: "var(--muted)" }}>{f.desc}</p>
+              <h3 className="font-semibold text-sm mb-1 text-foreground">{f.title}</h3>
+              <p className="text-sm text-muted">{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer
-        className="border-t px-6 py-4 flex items-center justify-between text-xs"
-        style={{ borderColor: "var(--border)", color: "var(--muted)" }}
-      >
+      <footer className="border-t border-border px-6 py-4 flex items-center justify-between text-xs text-muted">
         <span>© 2026 JudgeChain</span>
         <div className="flex gap-4">
-          <a href="#" className="hover:opacity-70">GitHub</a>
-          <a href="#" className="hover:opacity-70">Docs</a>
+          <a href="#" className="hover:text-accent transition-colors">GitHub</a>
+          <a href="#" className="hover:text-accent transition-colors">Docs</a>
         </div>
       </footer>
     </div>

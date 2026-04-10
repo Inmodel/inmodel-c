@@ -14,11 +14,20 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-card: var(--card);
+  --color-card-border: var(--card-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  @apply bg-background text-foreground;
+}
+
+.wallet-adapter-button {
+  @apply !bg-accent hover:!bg-accent-hover !h-9 !px-4 !rounded-md !text-sm !font-semibold !transition-colors;
 }
