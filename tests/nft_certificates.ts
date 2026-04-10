@@ -58,7 +58,6 @@ describe("judgechain-nft", () => {
           .createHackathon(hackathonName)
           .accounts({
             organizer: organizer.publicKey,
-            hackathon: hackathonPda,
             systemProgram: anchor.web3.SystemProgram.programId,
           })
           .rpc();
@@ -69,7 +68,6 @@ describe("judgechain-nft", () => {
           .accounts({
             payer: organizer.publicKey,
             collection: collection.publicKey,
-            hackathon: hackathonPda,
             coreProgram: CORE_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
           })
@@ -82,7 +80,6 @@ describe("judgechain-nft", () => {
           .accounts({
             participant: participant.publicKey,
             hackathon: hackathonPda,
-            submission: submissionPda,
             systemProgram: anchor.web3.SystemProgram.programId,
           })
           .signers([participant])
@@ -95,7 +92,6 @@ describe("judgechain-nft", () => {
           .accounts({
             judge: judge.publicKey,
             submission: submissionPda,
-            scoreHash: scorePda,
             systemProgram: anchor.web3.SystemProgram.programId,
           })
           .signers([judge])
@@ -111,11 +107,8 @@ describe("judgechain-nft", () => {
             payer: organizer.publicKey,
             participant: participant.publicKey,
             submission: submissionPda,
-            scoreHash: scorePda,
-            certificate: certificatePda,
             asset: asset.publicKey,
             collection: collection.publicKey,
-            hackathon: hackathonPda,
             coreProgram: CORE_PROGRAM_ID,
             systemProgram: anchor.web3.SystemProgram.programId,
           })

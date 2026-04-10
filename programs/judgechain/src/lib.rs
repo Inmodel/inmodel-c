@@ -4,7 +4,7 @@ use mpl_core::{
     types::{Plugin, PluginAuthorityPair, PermanentFreezeDelegate},
 };
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2");
 
 #[program]
 pub mod judgechain {

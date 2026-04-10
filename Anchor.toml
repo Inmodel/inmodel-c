@@ -1,12 +1,12 @@
+[toolchain]
+anchor_version = "0.30.1"
+
 [features]
-seeds = false
+resolution = true
 skip-lint = false
 
 [programs.devnet]
-judgechain = "JdgC4p1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9"
-
-[registry]
-url = "https://api.apr.dev"
+judgechain = "9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2"
 
 [provider]
 cluster = "devnet"
@@ -14,3 +14,5 @@ wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "mocha -r ts-node/register tests/**/*.ts"
+
+[hooks]
