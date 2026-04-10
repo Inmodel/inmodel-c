@@ -30,6 +30,8 @@ interface SubmitOptions {
   deployment: string;
   keypair?: string;
   network: Network;
+  coverage?: string;
+  lint?: string;
 }
 
 interface StatusOptions {
@@ -37,11 +39,20 @@ interface StatusOptions {
   network: Network;
 }
 
+interface SystemScore {
+  code_quality: number;
+  test_coverage: number;
+  deployment_health: number;
+  documentation: number;
+  custom_criteria: number;
+  total: number;
+}
+
 interface ScoreResponse {
   submission_id: string;
   problem_id: string;
   wallet: string;
-  system_score: number;
+  system_score: SystemScore;
 }
 
 function validate(options: SubmitOptions): void {
@@ -56,6 +67,22 @@ function validate(options: SubmitOptions): void {
   if (!URL_RE.test(options.deployment)) {
     console.error('Error: --deployment must be a valid URL (e.g. https://myapp.vercel.app)');
     process.exit(1);
+  }
+
+  if (options.coverage) {
+    const c = parseFloat(options.coverage);
+    if (isNaN(c) || c < 0 || c > 100) {
+      console.error('Error: --coverage must be a number between 0 and 100');
+      process.exit(1);
+    }
+  }
+
+  if (options.lint) {
+    const l = parseFloat(options.lint);
+    if (isNaN(l) || l < 0 || l > 18) {
+      console.error('Error: --lint must be a number between 0 and 18');
+      process.exit(1);
+    }
   }
 }
 
@@ -88,6 +115,8 @@ program.command('submit')
   .requiredOption('-p, --problem <id>', 'Problem statement ID')
   .requiredOption('-r, --repo <url>', 'GitHub repository URL')
   .requiredOption('-d, --deployment <url>', 'Live deployment URL')
+  .option('-c, --coverage <percent>', 'Manually reported test coverage (0-100)', '0')
+  .option('-l, --lint <score>', 'Manually reported linting score (0-18)', '0')
   .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
   .option('-n, --network <name>', 'Solana network: devnet | mainnet | localnet', 'devnet')
   .action(async (options: SubmitOptions) => {
@@ -104,23 +133,34 @@ program.command('submit')
       repo_url: options.repo,
       deployment_url: options.deployment,
       participant_wallet: wallet,
+      reported_test_coverage_percent: parseFloat(options.coverage || '0'),
+      reported_linting_score: parseFloat(options.lint || '0'),
     };
 
-    const msgBytes = Buffer.from(JSON.stringify(payload));
+    const payloadStr = JSON.stringify(payload);
     const signature = Buffer.from(
-      nacl.sign.detached(msgBytes, keypair.secretKey)
+      nacl.sign.detached(Buffer.from(payloadStr), keypair.secretKey)
     ).toString('base64');
 
     const spinner = ora('Submitting to JudgeChain...').start();
 
     try {
-      const { data } = await axios.post<ScoreResponse>(`${API_URL}/score`, payload, {
-        headers: { 'x-signature': signature, 'x-network': options.network },
+      const { data } = await axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-signature': signature,
+          'x-network': options.network
+        },
       });
 
       spinner.succeed('Submission successful!');
       console.log(`  Submission ID: ${data.submission_id}`);
-      console.log(`  Score:         ${data.system_score}`);
+      console.log(`  Total Score:   ${data.system_score.total}`);
+      console.log(`  Breakdown:`);
+      console.log(`    - Code Quality:   ${data.system_score.code_quality}`);
+      console.log(`    - Test Coverage:  ${data.system_score.test_coverage}`);
+      console.log(`    - Deployment:     ${data.system_score.deployment_health}`);
+      console.log(`    - Documentation:  ${data.system_score.documentation}`);
     } catch (err) {
       spinner.fail('Submission failed.');
       const msg = axios.isAxiosError(err)
