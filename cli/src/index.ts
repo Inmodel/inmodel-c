@@ -216,7 +216,7 @@ program.command('submit')
   .option('-k, --keypair <path>',     'Path to Solana keypair JSON')
   .option('-n, --network <name>',     'devnet | mainnet | localnet', 'devnet')
   .option('--json',                   'Output raw JSON (for CI/scripting)')
-  .action(async (options: any) => {
+  .action(async (options: { problem?: string; repo?: string; deployment?: string; coverage?: string; lint?: string; keypair?: string; network: Network; json?: boolean }) => {
     if (!options.json) p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Submission Tool')}`);
 
     const config = loadConfig();
@@ -295,14 +295,14 @@ program.command('leaderboard')
   .description('View the current leaderboard for a problem')
   .option('-p, --problem <id>', 'Problem statement ID')
   .option('--json',             'Output raw JSON')
-  .action(async (options: any) => {
+  .action(async (options: { problem?: string; json?: boolean }) => {
     if (!options.json) p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Leaderboard')}`);
-    let problemId: string = options.problem;
+    let problemId: string | undefined = options.problem;
 
     if (!problemId) {
       try {
-        const { data: problems } = await axios.get(`${API_URL}/problems`);
-        const choices = Object.entries(problems).map(([id, info]: [string, any]) => ({
+        const { data: problems } = await axios.get<Record<string, { title: string }>>(`${API_URL}/problems`);
+        const choices = Object.entries(problems).map(([id, info]) => ({
           label: `${id}: ${info.title}`, value: id,
         }));
         if (choices.length === 0) { p.log.warn('No problems available.'); process.exit(0); }
@@ -335,7 +335,7 @@ program.command('leaderboard')
         colWidths: [6, 16, 9, 9, 9, 12],
       });
 
-      data.slice(0, 10).forEach((e: any, i: number) => {
+      data.slice(0, 10).forEach((e: ScoreResponse & { on_chain_tx?: string }, i: number) => {
         const rank  = i + 1;
         const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : String(rank);
         const onChain = e.on_chain_tx
@@ -365,7 +365,7 @@ program.command('init')
   .description('Interactive guide to submit your project')
   .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
   .option('-n, --network <name>', 'devnet | mainnet | localnet', 'devnet')
-  .action(async (options: any) => {
+  .action(async (options: { keypair?: string; network: string }) => {
     p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Interactive Submission')}`);
 
     const existingConfig = loadConfig();
@@ -373,8 +373,8 @@ program.command('init')
 
     let problemChoices: { label: string; value: string }[] = [];
     try {
-      const { data: problems } = await axios.get(`${API_URL}/problems`);
-      problemChoices = Object.entries(problems).map(([id, info]: [string, any]) => ({
+      const { data: problems } = await axios.get<Record<string, { title: string }>>(`${API_URL}/problems`);
+      problemChoices = Object.entries(problems).map(([id, info]) => ({
         label: `${id}: ${info.title}`, value: id,
       }));
     } catch { p.log.warn('Could not fetch problem list. Entering manual ID.'); }
@@ -460,7 +460,7 @@ program.command('whoami')
   .description('Show loaded wallet address and SOL balance')
   .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
   .option('-n, --network <name>', 'devnet | mainnet | localnet', 'devnet')
-  .action(async (options: any) => {
+  .action(async (options: { keypair?: string; network: string }) => {
     p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Wallet Info')}`);
     const keypair    = loadKeypair(options.keypair);
     const wallet     = keypair.publicKey.toBase58();
