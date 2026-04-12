@@ -5,6 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { web3 } from "@coral-xyz/anchor";
 
 import { useProgram, getCertificatePda, getHackathonPda } from "../../lib/useProgram";
+import { BentoCard } from "../../components/ui/BentoCard";
 import { toast } from "sonner";
 
 // For MVP, we use the same hardcoded hackathon
@@ -22,8 +23,18 @@ type UserSubmission = {
     judgeScore: number;
     systemScore: number;
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  certificate?: any;
+  certificate?: unknown;
+};
+
+type ApiSubmission = {
+  wallet: string;
+  problem_id: string;
+  repo_url: string;
+  system_score?: { total: number };
+  judge_score?: number;
+  final_score?: number;
+  certificate?: unknown;
+  submission_id: string;
 };
 
 export default function ProfilePage() {
@@ -48,10 +59,8 @@ export default function ProfilePage() {
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/submissions?wallet=${publicKey.toBase58()}`
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data: any[] = await res.json();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mapped: UserSubmission[] = data.map((s: any) => ({
+      const data: ApiSubmission[] = await res.json();
+      const mapped: UserSubmission[] = data.map((s) => ({
         pubkey: new web3.PublicKey(s.wallet),
         account: { problemId: s.problem_id, repoUrl: s.repo_url ?? "" },
         score: s.system_score
@@ -145,65 +154,45 @@ export default function ProfilePage() {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-6">
-              {submissions.map((s) => (
-                <div key={s.pubkey.toBase58()} className="bg-card border border-card-border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between gap-6">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-1">
-                      {problems[s.account.problemId]?.title || s.account.problemId}
-                    </h3>
-                    <div className="flex gap-3 mb-4 text-xs font-mono text-muted">
-                       <span>ID: {s.pubkey.toBase58().slice(0, 8)}...</span>
-                       <a href={s.account.repoUrl} target="_blank" className="text-accent hover:underline">Repo ↗</a>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl xl:max-w-7xl mx-auto">
+              {submissions.map((s) => {
+                const title = problems[s.account.problemId]?.title || s.account.problemId;
+                const isQualified = s.score && s.score.finalScore >= 50;
+                const scoreDisplay = s.score ? String(s.score.finalScore) : 'PND';
+                
+                let actionText = undefined;
+                let icon = '🚀';
+                let tagText = 'AWAITING JUDGING';
+                
+                if (s.certificate) {
+                  tagText = `SCORE: ${scoreDisplay} — MINTED`;
+                  icon = '🏆';
+                } else if (isQualified) {
+                  tagText = `VERIFIED: ${scoreDisplay} — UNLOCKED`;
+                  actionText = 'Claim NFT';
+                } else if (s.score) {
+                  tagText = `SCORE: ${scoreDisplay} — LOCKED`;
+                  icon = '🔒';
+                }
 
-                    {s.score ? (
-                      <div className="inline-flex items-center gap-4 bg-background px-4 py-2 rounded-xl border border-border">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] text-muted uppercase font-bold tracking-tighter">Final Score</span>
-                          <span className="text-xl font-black text-accent">{s.score.finalScore}</span>
-                        </div>
-                        <div className="h-8 w-px bg-border mx-2" />
-                        <div className="flex flex-col">
-                           <span className="text-[10px] text-muted uppercase font-bold tracking-tighter">Status</span>
-                           <span className="text-xs font-bold text-foreground">
-                             {s.score.finalScore >= 50 ? "✅ Qualified for Cert" : "❌ Below Threshold (50)"}
-                           </span>
-                        </div>
+                return (
+                  <BentoCard
+                    key={s.pubkey.toBase58()}
+                    title={title}
+                    subtitle={
+                      <div className="flex flex-col gap-1">
+                        <span>ID: {s.pubkey.toBase58().slice(0, 8)}...</span>
+                        <a href={s.account.repoUrl} target="_blank" className="hover:text-[#BAC4D6] transition-colors leading-none">Repository ↗</a>
                       </div>
-                    ) : (
-                      <div className="inline-flex items-center gap-2 bg-muted/5 text-muted px-3 py-1.5 rounded-lg text-sm border border-border/50">
-                        <span className="w-2 h-2 rounded-full bg-muted animate-pulse" />
-                        Awaiting Judging
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col justify-center items-end min-w-[200px]">
-                    {s.certificate ? (
-                      <div className="bg-accent/10 text-accent border border-accent/20 px-6 py-4 rounded-2xl text-center w-full">
-                        <div className="text-2xl mb-1">🏆</div>
-                        <div className="text-sm font-bold uppercase tracking-tight">NFT Certificate Claimed</div>
-                        <div className="text-[10px] opacity-70 mt-1 font-mono">Issued on Solana</div>
-                      </div>
-                    ) : s.score && s.score.finalScore >= 50 ? (
-                      <button
-                        onClick={() => claimCertificate(s)}
-                        className="w-full bg-accent text-white px-6 py-4 rounded-2xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-accent/20 active:scale-95 flex flex-col items-center"
-                      >
-                        <span className="text-xl mb-1">🎓</span>
-                        Claim Certificate NFT
-                      </button>
-                    ) : (
-                      <div className="w-full bg-muted/5 border border-border/50 px-6 py-4 rounded-2xl text-center opacity-50 grayscale cursor-not-allowed">
-                        <div className="text-2xl mb-1">🔒</div>
-                        <div className="text-sm font-bold">Certificate Locked</div>
-                        <div className="text-[10px] mt-1">Score 50+ to unlock</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                    }
+                    tagText={tagText}
+                    icon={icon}
+                    actionText={actionText}
+                    onAction={isQualified && !s.certificate ? () => claimCertificate(s) : undefined}
+                    disabled={!!s.certificate || !isQualified}
+                  />
+                );
+              })}
             </div>
           )}
         </div>
