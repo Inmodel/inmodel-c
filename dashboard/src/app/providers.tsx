@@ -1,18 +1,21 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 
 const WalletProviderInner = dynamic(
   () => import("./WalletProviderInner"),
   { ssr: false }
 );
 
+const emptySubscribe = () => () => {};
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export function WalletProviders({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const isClient = useSyncExternalStore(emptySubscribe, getSnapshot, getServerSnapshot);
   
   // To avoid hydration mismatch, we only render the wallet provider on the client
-  if (!mounted) {
+  if (!isClient) {
     return <>{children}</>;
   }
 
