@@ -24,10 +24,11 @@ async def judge_score(
     x_signature: str = Header(None),
     db: Session = Depends(get_db),
 ):
-    if x_signature:
-        raw_body = await request.body()
-        if not verify_solana_signature(body.judge_wallet, raw_body.decode(), x_signature):
-            raise HTTPException(status_code=401, detail="Invalid signature")
+    if not x_signature:
+        raise HTTPException(status_code=401, detail="Missing x-signature header")
+    raw_body = await request.body()
+    if not verify_solana_signature(body.judge_wallet, raw_body.decode(), x_signature):
+        raise HTTPException(status_code=401, detail="Invalid signature")
 
     existing = db_store.get_by_id(db, body.submission_id)
     if not existing:
@@ -39,7 +40,7 @@ async def judge_score(
     system_score = existing["system_score"]["total"]
     final_score = round((system_score * 0.7) + (judge_score * 0.3), 2)
 
-    updated = db_store.apply_judge_score(db, body.submission_id, judge_score)
+    updated = db_store.apply_judge_score(db, body.submission_id, judge_score, final_score=final_score)
 
     background_tasks.add_task(
         record_score_on_chain,
