@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { web3 } from "@coral-xyz/anchor";
-import { Navbar } from "../components/Navbar";
+
 import { useProgram, getCertificatePda, getHackathonPda } from "../../lib/useProgram";
 import { toast } from "sonner";
 
@@ -124,8 +124,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Navbar />
-      <main className="flex flex-col items-center px-6 py-16 flex-1">
+      <main className="flex flex-col items-center px-6 py-16 flex-1 text-foreground">
         <div className="w-full max-w-4xl">
           <h1 className="text-3xl font-bold mb-2">My Projects</h1>
           <p className="text-muted mb-10">Manage your submissions and claim earned certificates.</p>
