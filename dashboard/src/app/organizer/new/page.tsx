@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { web3 } from "@coral-xyz/anchor";
-import { Navbar } from "../../components/Navbar";
+
 import { useProgram, getHackathonPda } from "../../../lib/useProgram";
 import { toast } from "sonner";
 
@@ -79,8 +79,7 @@ export default function NewHackathonPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Navbar />
-      <main className="flex flex-col items-center px-6 py-16 flex-1">
+      <main className="flex flex-col items-center px-6 py-16 flex-1 text-foreground">
         <div className="w-full max-w-2xl bg-card border border-card-border rounded-2xl p-8 shadow-sm">
           <h1 className="text-2xl font-bold mb-1">Create New Hackathon</h1>
           <p className="text-sm text-muted mb-8">Deploy a new hackathon program and define its challenges.</p>
