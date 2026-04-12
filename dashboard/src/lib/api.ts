@@ -50,7 +50,7 @@ export const api = {
       return r.json();
     }),
     
-  mintCertificate: (submissionId: string): Promise<any> =>
+  mintCertificate: (submissionId: string): Promise<{ tx_sig: string; solscan_url: string; metadata_uri: string }> =>
     fetch(`${API_BASE}/certificate/${submissionId}`, { method: "POST" }).then(async r => {
       if (!r.ok) {
         const err = await r.json().catch(() => ({ detail: "Unknown backend error" }));
