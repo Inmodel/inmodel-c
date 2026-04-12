@@ -7,7 +7,14 @@ from app.database import init_db
 
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="JudgeChain Backend")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+app = FastAPI(title="JudgeChain Backend", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,11 +27,6 @@ app.add_middleware(
 app.include_router(score.router, prefix="/api/v1")
 app.include_router(judge.router, prefix="/api/v1")
 app.include_router(certificate_router, prefix="/api/v1")
-
-
-@app.on_event("startup")
-def startup():
-    init_db()
 
 
 @app.get("/")
