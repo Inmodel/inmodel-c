@@ -524,6 +524,10 @@ program
   .option('-s, --submission-id <id>', 'Submission ID from your submit output')
   .option('-n, --network <network>', 'Network: devnet | mainnet', 'devnet')
   .action(async (options) => {
+    if (!options.submissionId) {
+      console.error(chalk.red('Error: --submission-id is required'));
+      process.exit(1);
+    }
     const s = p.spinner();
     s.start('Minting your certificate on-chain...');
 
