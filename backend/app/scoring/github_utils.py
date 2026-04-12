@@ -9,10 +9,11 @@ GITHUB_HEADERS = {
     "Accept": "application/vnd.github.v3+json"
 }
 
-# Add auth if token is in environment
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 if GITHUB_TOKEN:
     GITHUB_HEADERS["Authorization"] = f"token {GITHUB_TOKEN}"
+
+_github_client = httpx.AsyncClient(headers=GITHUB_HEADERS, timeout=10.0)
 
 def parse_github_repo(url: str) -> tuple[str, str]:
     # Handles both https://github.com/owner/repo and github.com/owner/repo
@@ -24,10 +25,8 @@ def parse_github_repo(url: str) -> tuple[str, str]:
     return owner, repo
 
 async def fetch_github_api(endpoint: str) -> httpx.Response:
-    async with httpx.AsyncClient() as client:
-        url = f"https://api.github.com/{endpoint.lstrip('/')}"
-        r = await client.get(url, headers=GITHUB_HEADERS)
-        return r
+    url = f"https://api.github.com/{endpoint.lstrip('/')}"
+    return await _github_client.get(url)
 
 async def assert_repo_accessible(owner: str, repo: str) -> None:
     r = await fetch_github_api(f"repos/{owner}/{repo}")
