@@ -19,7 +19,7 @@ def test_score_endpoint():
     payload = {
         "problem_id": "defi_dashboard",
         "participant_wallet": wallet,
-        "repo_url": "https://github.com/Inmodel-Labs/hackathon-submission-pineapples",
+        "repo_url": "https://github.com/octocat/Hello-World",
         "deployment_url": "https://google.com/",
         "reported_test_coverage_percent": 90.0,
         "reported_linting_score": 15.0
