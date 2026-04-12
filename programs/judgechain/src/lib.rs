@@ -38,12 +38,19 @@ pub mod judgechain {
         Ok(())
     }
 
+    pub fn finalize_hackathon(ctx: Context<FinalizeHackathon>) -> Result<()> {
+        let hackathon = &mut ctx.accounts.hackathon;
+        hackathon.is_active = false;
+        Ok(())
+    }
+
     pub fn create_submission(
         ctx: Context<CreateSubmission>,
         problem_id: String,
         repo_url: String,
         deployment_url: String,
     ) -> Result<()> {
+        require!(ctx.accounts.hackathon.is_active, JudgeChainError::HackathonInactive);
         let submission = &mut ctx.accounts.submission;
         submission.hackathon_id = ctx.accounts.hackathon.key();
         submission.participant_wallet = ctx.accounts.participant.key();
@@ -59,12 +66,19 @@ pub mod judgechain {
         judge_score: u8,
         ipfs_cid: String,
     ) -> Result<()> {
+        require!(ctx.accounts.hackathon.is_active, JudgeChainError::HackathonInactive);
         require!(system_score <= 100 && judge_score <= 100, JudgeChainError::InvalidScore);
+        
         let score = &mut ctx.accounts.score_hash;
         score.submission_id = ctx.accounts.submission.key();
         score.system_score = system_score;
         score.judge_score = judge_score;
-        score.final_score = (system_score / 2) + (judge_score / 2);
+        
+        // Weighting: 70% System, 30% Judge
+        let system_part = (system_score as u16 * 7) / 10;
+        let judge_part = (judge_score as u16 * 3) / 10;
+        score.final_score = (system_part + judge_part) as u8;
+        
         score.ipfs_cid = ipfs_cid;
         Ok(())
     }
@@ -74,6 +88,9 @@ pub mod judgechain {
         metadata_uri: String,
         name: String,
     ) -> Result<()> {
+        // Only allow issuing certificates AFTER the hackathon is finalized/inactive
+        require!(!ctx.accounts.hackathon.is_active, JudgeChainError::HackathonNotFinalized);
+        
         // Enforce basic minimum score threshold
         require!(ctx.accounts.score_hash.final_score >= 50, JudgeChainError::ScoreTooLow);
 
@@ -149,6 +166,20 @@ pub struct CreateCollection<'info> {
 }
 
 #[derive(Accounts)]
+pub struct FinalizeHackathon<'info> {
+    #[account(mut)]
+    pub organizer: Signer<'info>,
+
+    #[account(
+        mut,
+        has_one = organizer,
+        seeds = [b"hackathon", organizer.key().as_ref()],
+        bump
+    )]
+    pub hackathon: Account<'info, Hackathon>,
+}
+
+#[derive(Accounts)]
 pub struct CreateSubmission<'info> {
     #[account(mut)]
     pub participant: Signer<'info>,
@@ -158,7 +189,7 @@ pub struct CreateSubmission<'info> {
     #[account(
         init,
         payer = participant,
-        space = 8 + 32 + 32 + 4 + 50 + 4 + 100 + 4 + 100,
+        space = 8 + 32 + 32 + 4 + 64 + 4 + 200 + 4 + 200,
         seeds = [b"submission", hackathon.key().as_ref(), participant.key().as_ref()],
         bump
     )]
@@ -173,6 +204,16 @@ pub struct ScoreSubmission<'info> {
     pub judge: Signer<'info>,
 
     pub submission: Account<'info, Submission>,
+
+    #[account(
+        has_one = organizer @ JudgeChainError::Unauthorized,
+        seeds = [b"hackathon", hackathon.organizer.as_ref()],
+        bump
+    )]
+    pub hackathon: Account<'info, Hackathon>,
+
+    /// CHECK: organizer must sign to authorize scoring
+    pub organizer: UncheckedAccount<'info>,
 
     #[account(
         init,
@@ -272,4 +313,10 @@ pub enum JudgeChainError {
     InvalidScore,
     #[msg("Score is too low to receive a certificate")]
     ScoreTooLow,
+    #[msg("The hackathon is no longer active")]
+    HackathonInactive,
+    #[msg("The hackathon results must be finalized before issuing certificates")]
+    HackathonNotFinalized,
+    #[msg("Only the hackathon organizer can perform this action")]
+    Unauthorized,
 }
