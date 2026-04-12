@@ -14,7 +14,7 @@ export function useProgram() {
   if (!wallet) return null;
   const provider = new AnchorProvider(connection, wallet, {});
   setProvider(provider);
-  return new Program<Judgechain>(idl as any, provider);
+  return new Program<Judgechain>(idl as unknown as Judgechain, provider);
 }
 
 export function getSubmissionPda(hackathonPubkey: web3.PublicKey, participantPubkey: web3.PublicKey) {
