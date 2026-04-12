@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { BentoCard } from "../../components/ui/BentoCard";
 import { toast } from "sonner";
 
 type Hackathon = {
@@ -61,36 +62,22 @@ export default function OrganizerDashboard() {
               </Link>
             </div>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl xl:max-w-7xl mx-auto">
               {hackathons.map((h) => (
-                <div key={h.pubkey} className="bg-card border border-card-border rounded-2xl p-6 shadow-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xl font-bold mb-1">{h.name}</h3>
-                      <p className="text-xs font-mono text-muted mb-4">{h.pubkey}</p>
-                      
-                      <div className="flex gap-4">
-                        <div className="bg-background px-3 py-1.5 rounded-lg border border-border text-center">
-                          <div className="text-[10px] text-muted uppercase font-bold">Challenges</div>
-                          <div className="text-lg font-black">{h.problems.length}</div>
-                        </div>
-                        <div className="bg-background px-3 py-1.5 rounded-lg border border-border text-center">
-                          <div className="text-[10px] text-muted uppercase font-bold">Status</div>
-                          <div className="text-xs font-bold text-green-600 mt-1">ACTIVE</div>
-                        </div>
-                      </div>
+                <BentoCard
+                  key={h.pubkey}
+                  title={h.name}
+                  subtitle={
+                    <div className="flex flex-col gap-1">
+                      <span className="font-mono text-xs">ID: {h.pubkey.slice(0, 8)}...</span>
+                      <span>Active Challenges: {h.problems.length}</span>
                     </div>
-                    
-                    <div className="flex flex-col gap-2">
-                      <button className="text-sm font-semibold text-accent hover:underline px-4 py-2 bg-accent/5 rounded-md">
-                        Manage Submissions
-                      </button>
-                      <button className="text-sm font-semibold text-muted hover:text-foreground px-4 py-2">
-                        Edit Metadata
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  }
+                  tagText="ON-CHAIN HACKATHON"
+                  icon="🌐"
+                  actionText="Manage"
+                  onAction={() => toast.info("Management panel coming soon.")}
+                />
               ))}
             </div>
           )}
