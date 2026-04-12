@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, func
+from sqlalchemy import Column, String, Integer, DateTime, Boolean, func
 from app.database import Base
 
 
@@ -24,5 +24,6 @@ class Submission(Base):
     judge_score = Column(Integer, nullable=True)
     final_score = Column(Integer, nullable=True)
     tx_hash = Column(String, nullable=True)
+    judge_submitted = Column(Boolean, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

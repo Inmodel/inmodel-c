@@ -10,6 +10,7 @@ import { Keypair, Connection, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/we
 import nacl from 'tweetnacl';
 import chalk from 'chalk';
 import Table from 'cli-table3';
+import boxen from 'boxen';
 import * as p from '@clack/prompts';
 
 const program = new Command();
@@ -61,6 +62,10 @@ interface ScoreResponse {
   problem_id: string;
   wallet: string;
   system_score: SystemScore;
+  judge_score?: number | null;
+  final_score?: number | null;
+  tx_hash?: string | null;
+  status?: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -158,7 +163,7 @@ async function runSubmit(
   keypair: Keypair,
   network: string,
   jsonMode: boolean,
-): Promise<void> {
+): Promise<ScoreResponse | undefined> {
   const payloadStr = JSON.stringify(payload);
   const signature = Buffer.from(
     nacl.sign.detached(Buffer.from(payloadStr), keypair.secretKey)
@@ -169,7 +174,7 @@ async function runSubmit(
       headers: { 'Content-Type': 'application/json', 'x-signature': signature, 'x-network': network },
     });
     console.log(JSON.stringify(data, null, 2));
-    return;
+    return data;
   }
 
   const s = p.spinner();
@@ -181,6 +186,7 @@ async function runSubmit(
     s.stop('Submission verified');
     displayScore(data);
     p.outro(`${chalk.green('✔')} Successfully submitted to JudgeNod!`);
+    return data;
   } catch (err) {
     s.stop('Submission failed');
     const msg = axios.isAxiosError(err)
@@ -406,7 +412,7 @@ program.command('init')
     p.log.info(`${chalk.cyan('Wallet')}  ${chalk.dim(wallet)}`);
     p.log.info(`${chalk.cyan('Network')} ${chalk.dim(options.network)}`);
 
-    await runSubmit({
+    const result = await runSubmit({
       problem_id:                     group.problem,
       repo_url:                       group.repo,
       deployment_url:                 group.deployment,
@@ -414,6 +420,38 @@ program.command('init')
       reported_test_coverage_percent: parseFloat(group.coverage),
       reported_linting_score:         parseFloat(group.lint),
     }, keypair, options.network, false);
+
+    if (result) {
+      const mintNow = await p.confirm({ message: 'Would you like to mint your certificate now?' });
+      if (!p.isCancel(mintNow) && mintNow) {
+        const score = result.final_score ?? 0;
+        if (score >= 50) {
+          const s2 = p.spinner();
+          s2.start('Minting your certificate on-chain...');
+          try {
+            const res = await fetch(`${API_URL}/certificate/${result.submission_id}`, { method: 'POST' });
+            const certData = await res.json() as { metadata_uri: string; tx_sig: string; detail?: string };
+            if (!res.ok) throw new Error(certData.detail || 'Mint failed');
+            s2.stop('Certificate minted!');
+            console.log(boxen(
+              `🏆 Soulbound NFT Certificate\n\n` +
+              `Submission: ${result.submission_id}\n` +
+              `Metadata URI: ${certData.metadata_uri}\n` +
+              `TX: ${certData.tx_sig}\n` +
+              `Solscan: https://solscan.io/tx/${certData.tx_sig}?cluster=${options.network}`,
+              { padding: 1, borderColor: 'yellow', title: 'JudgeChain Certificate' }
+            ));
+          } catch (err) {
+            s2.stop('Mint failed');
+            p.log.error(`${chalk.red('Error:')} ${err instanceof Error ? err.message : String(err)}`);
+          }
+        } else {
+          p.log.warn(`Score must be >= 50 to mint. Current: ${score}`);
+        }
+      } else if (!p.isCancel(mintNow) && !mintNow) {
+        p.log.info(`Run ${chalk.cyan(`judgenod certificate --submission-id ${result.submission_id}`)} later to mint`);
+      }
+    }
   });
 
 // ── whoami ────────────────────────────────────────────────────────────────────
@@ -480,46 +518,38 @@ program.command('score')
 
 // ── certificate ───────────────────────────────────────────────────────────────
 
-program.command('certificate')
-  .description('Mint your soulbound NFT certificate')
-  .requiredOption('-s, --submission <id>', 'Your submission ID')
-  .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
-  .option('-n, --network <network>', 'devnet | mainnet | localnet', 'devnet')
-  .action(async (options: { submission: string; keypair?: string; network: Network }) => {
-    p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Certificate Minting')}`);
-    const keypair = loadKeypair(options.keypair);
-    const wallet  = keypair.publicKey.toBase58();
-
-    // Sign the submission ID to prove ownership
-    const payloadStr = JSON.stringify({ submission_id: options.submission, wallet });
-    const signature  = Buffer.from(
-      nacl.sign.detached(Buffer.from(payloadStr), keypair.secretKey)
-    ).toString('base64');
-
+program
+  .command('certificate')
+  .description('Mint your soulbound NFT certificate for a submission')
+  .option('-s, --submission-id <id>', 'Submission ID from your submit output')
+  .option('-n, --network <network>', 'Network: devnet | mainnet', 'devnet')
+  .action(async (options) => {
     const s = p.spinner();
-    s.start('Minting soulbound NFT certificate...');
+    s.start('Minting your certificate on-chain...');
+
     try {
-      const { data } = await axios.post(
-        `${API_URL}/certificate/${options.submission}`,
-        payloadStr,
-        { headers: { 'Content-Type': 'application/json', 'x-signature': signature, 'x-wallet': wallet } },
+      const res = await fetch(`${API_URL}/certificate/${options.submissionId}`, {
+        method: 'POST',
+      });
+      const data = await res.json() as { metadata_uri: string; tx_sig: string; detail?: string };
+
+      if (!res.ok) throw new Error(data.detail || 'Mint failed');
+
+      s.stop('Certificate minted!');
+
+      console.log(
+        boxen(
+          `🏆 Soulbound NFT Certificate\n\n` +
+          `Submission: ${options.submissionId}\n` +
+          `Metadata URI: ${data.metadata_uri}\n` +
+          `TX: ${data.tx_sig}\n` +
+          `Solscan: https://solscan.io/tx/${data.tx_sig}?cluster=${options.network}`,
+          { padding: 1, borderColor: 'yellow', title: 'JudgeChain Certificate' }
+        )
       );
-      s.stop('Certificate minted');
-      p.note([
-        `${chalk.cyan('Tx Signature')}  ${chalk.dim(data.tx_sig)}`,
-        `${chalk.cyan('Metadata URI')}  ${chalk.dim(data.metadata_uri ?? 'N/A')}`,
-        `${chalk.cyan('Solscan')}       ${chalk.underline.dim(data.solscan_url)}`,
-      ].join('\n'), chalk.green('🎓 Certificate Issued'));
-      p.outro(`${chalk.green('✔')} NFT certificate minted on ${options.network}!`);
     } catch (err) {
-      s.stop('Minting failed');
-      const axErr = axios.isAxiosError(err);
-      const status = axErr ? err.response?.status : null;
-      const detail = axErr ? err.response?.data?.detail : null;
-      const msg = status === 400 && detail?.toLowerCase().includes('score')
-        ? `Score too low to qualify for a certificate. ${detail}`
-        : (detail || (err instanceof Error ? err.message : 'Could not connect to backend'));
-      p.log.error(`${chalk.red('Error:')} ${msg}`);
+      s.stop('Mint failed');
+      console.error(chalk.red(`Error: ${(err as Error).message}`));
       process.exit(1);
     }
   });

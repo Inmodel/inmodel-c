@@ -1,24 +1,14 @@
 import uuid
-from fastapi import APIRouter, Header, HTTPException, Request, BackgroundTasks
-from solders.pubkey import Pubkey
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, BackgroundTasks
+from sqlalchemy.orm import Session
 from app.models.schemas import SubmissionInput, ScoreResponse
 from app.scoring.engine import execute_scoring_pipeline
 from app.api.auth import verify_solana_signature
 from app.scoring.solana_client import record_score_on_chain
-from app import store
+from app.database import get_db
+from app import db_store
 
 router = APIRouter()
-
-PROBLEMS = {
-    "defi-swap": {"title": "DeFi Token Swap", "description": "Build a simple token swap on Solana."},
-    "nft-mint": {"title": "NFT Minting Tool", "description": "Create and mint NFTs using Metaplex Core."},
-    "wallet-dashboard": {"title": "Wallet Dashboard", "description": "Build a wallet analytics dashboard."},
-}
-
-
-@router.get("/problems")
-def get_problems():
-    return PROBLEMS
 
 
 @router.post("/score", response_model=ScoreResponse)
@@ -27,6 +17,7 @@ async def submit_and_score(
     submission: SubmissionInput,
     background_tasks: BackgroundTasks,
     x_signature: str = Header(None),
+    db: Session = Depends(get_db),
 ):
     if not x_signature:
         raise HTTPException(status_code=401, detail="Missing x-signature header")
@@ -35,7 +26,7 @@ async def submit_and_score(
     if not verify_solana_signature(submission.participant_wallet, body_bytes.decode(), x_signature):
         raise HTTPException(status_code=401, detail="Invalid signature")
 
-    existing = store.get_by_wallet(submission.problem_id, submission.participant_wallet)
+    existing = db_store.get_by_wallet(db, submission.problem_id, submission.participant_wallet)
     if existing:
         return existing
 
@@ -47,35 +38,27 @@ async def submit_and_score(
         wallet=submission.participant_wallet,
         system_score=sys_score,
     )
-    store.save(resp.dict())
+    db_store.save(db, resp.dict(), submission.repo_url, submission.deployment_url)
 
-    # Record on devnet in the background
     background_tasks.add_task(
         record_score_on_chain,
-        submission.participant_wallet,
+        resp.submission_id,
         int(sys_score.total),
-        0  # Initial judge score is 0
+        0,
+        int(sys_score.total),
     )
 
     return resp
 
 
 @router.get("/score/{submission_id}", response_model=ScoreResponse)
-def get_score(submission_id: str):
-    data = store.get_by_id(submission_id)
+def get_score(submission_id: str, db: Session = Depends(get_db)):
+    data = db_store.get_by_id(db, submission_id)
     if not data:
         raise HTTPException(status_code=404, detail="Submission not found")
     return data
 
 
-@router.get("/submissions")
-def list_submissions():
-    """Return all submissions for judge review panel."""
-    return store.all_scores()
-
-
 @router.get("/leaderboard")
-def leaderboard(problem_id: str):
-    all_subs = store.all_scores()
-    filtered = [s for s in all_subs if s.get("problem_id") == problem_id]
-    return sorted(filtered, key=lambda x: x.get("system_score", {}).get("total", 0), reverse=True)
+def leaderboard(problem_id: str, db: Session = Depends(get_db)):
+    return db_store.leaderboard(db, problem_id)

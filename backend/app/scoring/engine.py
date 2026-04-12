@@ -7,7 +7,6 @@ from app.scoring.analyzers.documentation import score_documentation
 from app.scoring.analyzers.custom_criteria import score_custom_criteria
 
 async def execute_scoring_pipeline(submission: SubmissionInput) -> SystemScore:
-    """Master orchestrator for the backend technical scoring engine."""
     owner, repo = parse_github_repo(submission.repo_url)
     await assert_repo_accessible(owner, repo)
 
@@ -15,7 +14,7 @@ async def execute_scoring_pipeline(submission: SubmissionInput) -> SystemScore:
     pts_docs = await score_documentation(owner, repo)
     pts_tests = await score_test_coverage(owner, repo, submission.reported_test_coverage_percent)
     pts_code = await score_code_quality(owner, repo, submission.reported_linting_score)
-    pts_custom = await score_custom_criteria()
+    pts_custom = await score_custom_criteria(submission.repo_url, submission.problem_id)
 
     total = min(pts_deployment + pts_docs + pts_tests + pts_code + pts_custom, 70)
 

@@ -46,5 +46,7 @@ class ScoreResponse(BaseModel):
 
 class JudgeScoreInput(BaseModel):
     submission_id: str
-    judge_score: int = Field(..., ge=0, le=30)
+    innovation: float = Field(..., ge=0, le=10)
+    impact: float = Field(..., ge=0, le=10)
+    presentation: float = Field(..., ge=0, le=10)
     judge_wallet: str

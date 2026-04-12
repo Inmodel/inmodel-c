@@ -1,19 +1,20 @@
 "use client";
-import { useMemo } from "react";
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
-import { clusterApiUrl } from "@solana/web3.js";
-import "@solana/wallet-adapter-react-ui/styles.css";
+import dynamic from "next/dynamic";
+import { useState, useEffect } from "react";
+
+const WalletProviderInner = dynamic(
+  () => import("./WalletProviderInner"),
+  { ssr: false }
+);
 
 export function WalletProviders({ children }: { children: React.ReactNode }) {
-  const endpoint = clusterApiUrl("devnet");
-  const wallets = useMemo(() => [new PhantomWalletAdapter(), new SolflareWalletAdapter()], []);
-  return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
-  );
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  
+  // To avoid hydration mismatch, we only render the wallet provider on the client
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
+  return <WalletProviderInner>{children}</WalletProviderInner>;
 }

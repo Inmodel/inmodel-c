@@ -1,0 +1,81 @@
+{
+  "version": "0.1.0",
+  "name": "judgechain",
+  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "metadata": { "name": "judgechain", "version": "0.1.0", "spec": "0.1.0" },
+  "instructions": [
+    {
+      "name": "createHackathon",
+      "discriminator": [0,0,0,0,0,0,0,1],
+      "accounts": [
+        { "name": "organizer", "writable": true, "signer": true },
+        { "name": "hackathon", "writable": true, "pda": { "seeds": [{ "kind": "const", "value": [104,97,99,107,97,116,104,111,110] }, { "kind": "account", "path": "organizer" }] } },
+        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [{ "name": "name", "type": "string" }]
+    },
+    {
+      "name": "createSubmission",
+      "discriminator": [0,0,0,0,0,0,0,2],
+      "accounts": [
+        { "name": "participant", "writable": true, "signer": true },
+        { "name": "hackathon" },
+        { "name": "submission", "writable": true, "pda": { "seeds": [{ "kind": "const", "value": [115,117,98,109,105,115,115,105,111,110] }, { "kind": "account", "path": "hackathon" }, { "kind": "account", "path": "participant" }] } },
+        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "problemId", "type": "string" },
+        { "name": "repoUrl", "type": "string" },
+        { "name": "deploymentUrl", "type": "string" }
+      ]
+    },
+    {
+      "name": "scoreSubmission",
+      "discriminator": [0,0,0,0,0,0,0,3],
+      "accounts": [
+        { "name": "judge", "writable": true, "signer": true },
+        { "name": "submission" },
+        { "name": "scoreHash", "writable": true, "pda": { "seeds": [{ "kind": "const", "value": [115,99,111,114,101] }, { "kind": "account", "path": "submission" }] } },
+        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+      ],
+      "args": [
+        { "name": "systemScore", "type": "u8" },
+        { "name": "judgeScore", "type": "u8" },
+        { "name": "ipfsCid", "type": "string" }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ScoreHash",
+      "discriminator": [0,0,0,0,0,0,0,4],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "submissionId", "type": "publicKey" },
+          { "name": "systemScore", "type": "u8" },
+          { "name": "judgeScore", "type": "u8" },
+          { "name": "finalScore", "type": "u8" },
+          { "name": "ipfsCid", "type": "string" }
+        ]
+      }
+    },
+    {
+      "name": "Submission",
+      "discriminator": [0,0,0,0,0,0,0,5],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "hackathonId", "type": "publicKey" },
+          { "name": "participantWallet", "type": "publicKey" },
+          { "name": "problemId", "type": "string" },
+          { "name": "repoUrl", "type": "string" },
+          { "name": "deploymentUrl", "type": "string" }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    { "code": 6000, "name": "InvalidScore", "msg": "Score must be between 0 and 100" }
+  ]
+}

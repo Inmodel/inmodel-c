@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletButton } from "@/components/WalletButton";
 
 export function Navbar() {
   return (
@@ -27,8 +27,8 @@ export function Navbar() {
           </Link>
         </div>
       </div>
-      <div className="wallet-adapter-custom">
-        <WalletMultiButton />
+      <div>
+        <WalletButton />
       </div>
     </nav>
   );

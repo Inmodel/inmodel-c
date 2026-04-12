@@ -27,6 +27,7 @@ def _to_dict(s: Submission) -> dict:
         "judge_score": s.judge_score,
         "final_score": s.final_score,
         "tx_hash": s.tx_hash,
+        "judge_submitted": s.judge_submitted,
         "status": _status(s),
     }
 
@@ -65,12 +66,13 @@ def save(db: Session, data: dict, repo_url: str, deployment_url: str) -> None:
     db.commit()
 
 
-def apply_judge_score(db: Session, submission_id: str, judge_score: int, tx_hash: Optional[str] = None) -> Optional[dict]:
+def apply_judge_score(db: Session, submission_id: str, judge_score: float, tx_hash: Optional[str] = None) -> Optional[dict]:
     row = db.get(Submission, submission_id)
     if not row:
         return None
     row.judge_score = judge_score
-    row.final_score = row.score_total + judge_score
+    row.final_score = round((row.score_total * 0.7) + (judge_score * 0.3))
+    row.judge_submitted = True
     if tx_hash:
         row.tx_hash = tx_hash
     db.commit()

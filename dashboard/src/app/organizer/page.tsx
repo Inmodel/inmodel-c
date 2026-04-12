@@ -20,7 +20,7 @@ export default function OrganizerDashboard() {
   useEffect(() => {
     if (!publicKey) return;
     
-    fetch(`http://localhost:8000/api/v1/hackathons?organizer=${publicKey.toBase58()}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/hackathons?organizer=${publicKey.toBase58()}`)
       .then(res => res.json())
       .then(setHackathons)
       .catch(() => toast.error("Failed to load your hackathons."))

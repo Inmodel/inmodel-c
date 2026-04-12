@@ -21,7 +21,7 @@ export default function NewHackathonPage() {
 
   function updateProblem(index: number, field: string, value: string) {
     const next = [...problems];
-    (next[index] as any)[field] = value;
+    next[index] = { ...next[index], [field]: value };
     setProblems(next);
   }
 
@@ -52,7 +52,7 @@ export default function NewHackathonPage() {
       // 2. Register on Backend
       const backendToast = toast.loading("Registering with JudgeChain metadata service...");
       try {
-        const res = await fetch("http://localhost:8000/api/v1/hackathons", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/hackathons`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -65,12 +65,13 @@ export default function NewHackathonPage() {
         if (!res.ok) throw new Error("Backend registration failed.");
         toast.success("Hackathon fully active!", { id: backendToast });
         router.push("/organizer");
-      } catch (err) {
+      } catch {
         toast.error("Metadata sync failed. Your hackathon is on-chain but not in our directory.", { id: backendToast });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || "On-chain initialization failed.", { id: chainToast });
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error(errorMessage || "On-chain initialization failed.", { id: chainToast });
     } finally {
       setCreating(false);
     }

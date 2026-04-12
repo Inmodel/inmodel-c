@@ -1,352 +1,198 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { Navbar } from "../components/Navbar";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const SOLSCAN_BASE = "https://solscan.io/tx";
-
-type SystemScore = {
-  code_quality: number;
-  test_coverage: number;
-  deployment_health: number;
-  documentation: number;
-  custom_criteria: number;
-  total: number;
-};
-
-type Submission = {
-  submission_id: string;
-  problem_id: string;
-  wallet: string;
-  system_score: SystemScore;
-  judge_score: number | null;
-  final_score: number | null;
-  tx_hash: string | null;
-  status: string;
-};
-
-type ProblemMeta = { title: string };
+import { useWallet } from "@solana/wallet-adapter-react";
+import { ScoreResult, ProblemMetadata } from "@/types";
 
 function truncateWallet(wallet: string) {
-  if (!wallet || wallet.length < 10) return wallet;
+  if (!wallet || wallet.length < 10) return wallet || "???";
   return `${wallet.slice(0, 4)}...${wallet.slice(-4)}`;
 }
 
-const SCORE_FIELDS: { key: keyof SystemScore; label: string }[] = [
-  { key: "code_quality", label: "Code Quality" },
-  { key: "test_coverage", label: "Test Coverage" },
-  { key: "deployment_health", label: "Deployment" },
-  { key: "documentation", label: "Documentation" },
-  { key: "custom_criteria", label: "Custom Criteria" },
-];
-
 export default function JudgePage() {
   const { publicKey } = useWallet();
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [problems, setProblems] = useState<Record<string, ProblemMeta>>({});
+  const [submissions, setSubmissions] = useState<ScoreResult[]>([]);
+  const [problems, setProblems] = useState<Record<string, ProblemMetadata>>({});
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [judgeScores, setJudgeScores] = useState<Record<string, number>>({});
-  const [submitting, setSubmitting] = useState<string | null>(null);
-  const [scored, setScored] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/v1/problems`)
-      .then((r) => r.json())
-      .then(setProblems)
-      .catch(() => console.warn("Could not load problems."));
-  }, []);
+  
+  const [judgeInputs, setJudgeInputs] = useState<Record<string, { innovation: number; impact: number; presentation: number }>>({});
+  const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
 
   const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/submissions`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: Submission[] = await res.json();
+      const data = await api.getSubmissions();
       setSubmissions(data);
-      // Mark already judge-scored ones
-      const alreadyScored = new Set(
-        data.filter((s) => s.judge_score !== null).map((s) => s.submission_id)
-      );
-      setScored(alreadyScored);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to load submissions";
-      toast.error(msg);
+      
+      // Initialize inputs for each submission
+      const inputs: any = {};
+      data.forEach(sub => {
+        inputs[sub.submission_id] = { innovation: 0, impact: 0, presentation: 0 };
+      });
+      setJudgeInputs(prev => ({ ...inputs, ...prev }));
+    } catch (err: any) {
+      toast.error(`Error loading submissions: ${err.message}`);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    api.getProblems().then(setProblems).catch(() => {});
     fetchSubmissions();
   }, [fetchSubmissions]);
 
-  function toggleExpand(id: string) {
-    setExpandedId((prev) => (prev === id ? null : id));
-    if (!judgeScores[id]) {
-      setJudgeScores((prev) => ({ ...prev, [id]: 0 }));
-    }
-  }
-
-  async function handleJudgeSubmit(sub: Submission) {
-    if (!publicKey) return toast.error("Connect your wallet first.");
-    const currentJudgeScore = judgeScores[sub.submission_id] ?? 0;
-
-    const payload = {
-      submission_id: sub.submission_id,
-      judge_score: currentJudgeScore,
-      judge_wallet: publicKey.toBase58(),
-    };
-
-    setSubmitting(sub.submission_id);
-    const toastId = toast.loading("Submitting judge score...");
-
+  async function handleJudgeSubmit(submissionId: string) {
+    if (!publicKey) return toast.error("Connect wallet to judge.");
+    const inputs = judgeInputs[submissionId];
+    
+    setIsSubmitting(submissionId);
     try {
-      const res = await fetch(`${API_URL}/api/v1/judge/score`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      const updated = await api.submitJudgeScore({
+        submission_id: submissionId,
+        ...inputs
       });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || `HTTP ${res.status}`);
-      }
-
-      toast.success("Judge score submitted successfully!", { id: toastId });
-      setScored((prev) => new Set([...prev, sub.submission_id]));
+      
+      toast.success("Judge score recorded successfully!");
+      setSubmissions(prev => prev.map(s => s.submission_id === submissionId ? { ...s, ...updated, judge_submitted: true } : s));
       setExpandedId(null);
-      await fetchSubmissions();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Submission failed";
-      toast.error(msg, { id: toastId });
+    } catch (err: any) {
+      toast.error(err.message);
     } finally {
-      setSubmitting(null);
+      setIsSubmitting(null);
     }
   }
+
+  const handleInputChange = (submissionId: string, field: string, value: number) => {
+    const val = Math.min(10, Math.max(0, value));
+    setJudgeInputs(prev => ({
+      ...prev,
+      [submissionId]: {
+        ...prev[submissionId],
+        [field]: val
+      }
+    }));
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="flex flex-col items-center px-6 py-16 flex-1">
+      <main className="flex flex-col items-center px-6 py-16 flex-1 text-foreground">
         <div className="w-full max-w-4xl">
-          {/* Header */}
-          <div className="flex justify-between items-end mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Judge Dashboard</h1>
-              <p className="text-sm text-muted mt-1">
-                Review submissions and provide manual scoring.
-              </p>
-            </div>
-            <button
-              onClick={fetchSubmissions}
-              disabled={loading}
-              className="text-xs font-medium text-accent hover:underline bg-accent/5 px-3 py-1.5 rounded-md transition-colors disabled:opacity-40"
-            >
-              {loading ? "Loading…" : "Refresh"}
-            </button>
+          <div className="mb-10">
+            <h1 className="text-3xl font-bold tracking-tight">Judge Panel</h1>
+            <p className="text-sm text-muted mt-2">Audit submissions and provide qualitative impact scoring.</p>
           </div>
 
-          {/* Wallet warning */}
-          {!publicKey && (
-            <div className="mb-6 p-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-sm">
-              Connect your wallet to submit judge scores.
-            </div>
-          )}
-
-          {/* Loading */}
-          {loading && submissions.length === 0 && (
+          {loading && submissions.length === 0 ? (
             <div className="flex justify-center py-20">
               <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             </div>
-          )}
+          ) : (
+            <div className="grid gap-4">
+              {submissions.map((sub) => {
+                const isExpanded = expandedId === sub.submission_id;
+                const problemTitle = problems[sub.problem_id]?.title || sub.problem_id;
+                const inputs = judgeInputs[sub.submission_id] || { innovation: 0, impact: 0, presentation: 0 };
+                const isAlreadyScored = sub.judge_submitted;
 
-          {/* Empty */}
-          {!loading && submissions.length === 0 && (
-            <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-card/50">
-              <p className="text-muted text-sm">
-                No submissions found. They&apos;ll appear here once someone submits via the CLI or /submit page.
-              </p>
-            </div>
-          )}
-
-          {/* Submission cards */}
-          <div className="grid gap-4">
-            {submissions.map((sub) => {
-              const isExpanded = expandedId === sub.submission_id;
-              const isAlreadyScored = scored.has(sub.submission_id);
-              const currentScore = judgeScores[sub.submission_id] ?? 0;
-              const problemTitle =
-                problems[sub.problem_id]?.title || sub.problem_id;
-
-              return (
-                <div
-                  key={sub.submission_id}
-                  className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden"
-                >
-                  {/* Card header */}
-                  <div className="p-5">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-base text-foreground truncate">
-                            {problemTitle}
-                          </h3>
+                return (
+                  <div key={sub.submission_id} className="bg-card border border-card-border rounded-xl shadow-sm transition-all overflow-hidden">
+                    <div 
+                      className="p-5 flex items-center justify-between cursor-pointer hover:bg-muted/5 transition-colors"
+                      onClick={() => setExpandedId(isExpanded ? null : sub.submission_id)}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-bold text-lg">{problemTitle}</h3>
                           {isAlreadyScored && (
-                            <span className="text-[10px] font-bold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded">
-                              SCORED
+                            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase border border-green-200">
+                              Already Scored
                             </span>
                           )}
-                          {sub.tx_hash && (
-                            <a
-                              href={`${SOLSCAN_BASE}/${sub.tx_hash}?cluster=devnet`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[10px] font-bold text-accent bg-accent/5 border border-accent/20 px-1.5 py-0.5 rounded hover:underline"
-                            >
-                              ON-CHAIN ↗
-                            </a>
-                          )}
                         </div>
-                        <p className="text-xs text-muted font-mono">
-                          {truncateWallet(sub.wallet)}
-                        </p>
+                        <p className="text-xs text-muted font-mono mt-1">{truncateWallet(sub.wallet)}</p>
                       </div>
 
-                      {/* Score display + action */}
-                      <div className="text-right flex flex-col items-end gap-2">
-                        <div>
-                          <div className="text-2xl font-bold text-accent">
-                            {sub.final_score ?? sub.system_score.total}
-                            <span className="text-xs text-muted font-normal ml-1">
-                              / {sub.judge_score !== null ? "100" : "70"}
-                            </span>
-                          </div>
-                          {sub.judge_score !== null && (
-                            <div className="text-[10px] text-muted font-medium">
-                              System: {sub.system_score.total} · Judge: {sub.judge_score}
-                            </div>
-                          )}
+                      <div className="flex items-center gap-8">
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-muted uppercase tracking-widest">System Score</p>
+                          <p className="text-xl font-bold text-foreground">{sub.system_score.total}<span className="text-xs font-normal text-muted ml-1">/ 70</span></p>
                         </div>
-
-                        <button
-                          onClick={() => toggleExpand(sub.submission_id)}
-                          className={`text-xs font-semibold px-4 py-1.5 rounded-md transition-all ${
-                            isExpanded
-                              ? "bg-muted/10 text-muted"
-                              : isAlreadyScored
-                              ? "border border-border text-muted hover:text-foreground"
-                              : "bg-accent text-white hover:opacity-90 shadow-sm active:scale-95"
-                          }`}
-                        >
-                          {isExpanded
-                            ? "Collapse"
-                            : isAlreadyScored
-                            ? "Edit Score"
-                            : "Score Now"}
-                        </button>
+                        <div className={`w-6 h-6 flex items-center justify-center transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}>
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Expanded panel */}
-                  {isExpanded && (
-                    <div className="border-t border-border p-5 bg-background/50 animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {/* Auto-score breakdown (read-only) */}
+                    {isExpanded && (
+                      <div className="p-8 border-t border-border bg-background/50 grid md:grid-cols-2 gap-10 animate-in slide-in-from-top-2 duration-300">
+                        {/* Read-only system breakdown */}
                         <div>
-                          <p className="text-xs font-bold text-muted uppercase tracking-widest mb-3">
-                            Auto-Score Breakdown
-                          </p>
-                          <div className="flex flex-col gap-2">
-                            {SCORE_FIELDS.map(({ key, label }) => (
-                              <div
-                                key={key}
-                                className="flex justify-between text-sm"
-                              >
-                                <span className="text-muted">{label}</span>
-                                <span className="font-medium text-foreground">
-                                  {sub.system_score[key]}
-                                </span>
+                          <p className="text-xs font-bold text-muted uppercase tracking-widest mb-4">Auto-Score Audit</p>
+                          <div className="space-y-2">
+                            {Object.entries(sub.system_score).filter(([k]) => k !== "total").map(([key, val]) => (
+                              <div key={key} className="flex justify-between text-sm">
+                                <span className="text-muted capitalize">{key.replace("_", " ")}</span>
+                                <span className="font-medium">{val as number}</span>
                               </div>
                             ))}
-                            <div className="flex justify-between text-sm font-bold border-t border-border pt-2 mt-1">
+                            <div className="flex justify-between text-sm font-bold border-t border-border pt-2 mt-2">
                               <span>System Total</span>
-                              <span className="text-accent">
-                                {sub.system_score.total}
-                                <span className="text-xs text-muted font-normal ml-1">/ 70</span>
-                              </span>
+                              <span className="text-accent">{sub.system_score.total} / 70</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Judge score input */}
-                        <div>
-                          <div className="flex justify-between items-center mb-3">
-                            <p className="text-xs font-bold text-muted uppercase tracking-widest">
-                              Judge Score (0–30)
-                            </p>
-                            <span className="text-accent font-mono font-bold text-xl">
-                              {currentScore}
-                            </span>
-                          </div>
-                          <input
-                            id={`judge-slider-${sub.submission_id}`}
-                            type="range"
-                            min="0"
-                            max="30"
-                            step="1"
-                            value={currentScore}
-                            disabled={isAlreadyScored}
-                            onChange={(e) =>
-                              setJudgeScores((prev) => ({
-                                ...prev,
-                                [sub.submission_id]: parseInt(e.target.value),
-                              }))
-                            }
-                            className="w-full accent-accent h-2 bg-muted/20 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-                          />
-                          <div className="text-xs text-muted mb-4">
-                            Estimated final:{" "}
-                            <span className="font-bold text-foreground">
-                              {sub.system_score.total + currentScore} / 100
-                            </span>
-                          </div>
+                        {/* Judge Inputs */}
+                        <div className="flex flex-col gap-6">
+                          <p className="text-xs font-bold text-muted uppercase tracking-widest">Manual Scoring (0–10 each)</p>
+                          
+                          {["innovation", "impact", "presentation"].map(field => (
+                            <div key={field} className="flex flex-col gap-2">
+                              <div className="flex justify-between items-center">
+                                <label className="text-xs font-semibold capitalize text-muted">{field}</label>
+                                <span className="text-accent font-mono font-bold">{ (inputs as any)[field] }</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="10"
+                                step="1"
+                                disabled={isAlreadyScored}
+                                value={(inputs as any)[field]}
+                                className="w-full accent-accent h-1.5 bg-border rounded-lg appearance-none cursor-pointer disabled:opacity-30"
+                                onChange={(e) => handleInputChange(sub.submission_id, field, parseInt(e.target.value))}
+                              />
+                            </div>
+                          ))}
 
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() => setExpandedId(null)}
-                              className="px-4 py-2 text-sm font-semibold text-muted hover:text-foreground transition-colors"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              id={`confirm-score-${sub.submission_id}`}
-                              onClick={() => handleJudgeSubmit(sub)}
-                              disabled={
-                                submitting === sub.submission_id ||
-                                isAlreadyScored ||
-                                !publicKey
-                              }
-                              className="bg-foreground text-background px-5 py-2 rounded-md text-sm font-bold hover:opacity-90 transition-all shadow-md active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                            >
-                              {submitting === sub.submission_id
-                                ? "Confirming…"
-                                : isAlreadyScored
-                                ? "Already Scored"
-                                : "Confirm Score"}
-                            </button>
-                          </div>
+                          <button
+                            disabled={isAlreadyScored || isSubmitting === sub.submission_id}
+                            onClick={() => handleJudgeSubmit(sub.submission_id)}
+                            className="mt-4 w-full py-3 rounded-lg text-sm font-bold bg-foreground text-background hover:opacity-90 disabled:opacity-40 transition-all shadow-lg active:scale-[0.98]"
+                          >
+                            {isSubmitting === sub.submission_id ? "Saving..." : isAlreadyScored ? "Submission Finalized" : "Confirm Manual Score"}
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                );
+              })}
+
+              {submissions.length === 0 && (
+                <div className="text-center py-20 border border-dashed border-border rounded-2xl">
+                  <p className="text-muted italic">No active submissions awaiting review.</p>
                 </div>
-              );
-            })}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>

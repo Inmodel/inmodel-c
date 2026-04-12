@@ -1,20 +1,20 @@
-import { Program, AnchorProvider, web3, Idl } from "@coral-xyz/anchor";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { useMemo } from "react";
-import idl from "./idl.json";
+import { Program, AnchorProvider, setProvider, web3 } from "@coral-xyz/anchor";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import idl from "../idl/judgechain.json";
+import type { Judgechain } from "../idl/judgechain";
 
-export const PROGRAM_ID = new web3.PublicKey("9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2");
+// Program ID: Use NEXT_PUBLIC_PROGRAM_ID or fallback to hardcoded
+export const PROGRAM_ID = new web3.PublicKey(
+  process.env.NEXT_PUBLIC_PROGRAM_ID || "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+);
 
-export function useProgram(): Program | null {
+export function useProgram() {
+  const wallet = useAnchorWallet();
   const { connection } = useConnection();
-  const wallet = useWallet();
-
-  return useMemo(() => {
-    if (!wallet.publicKey || !wallet.signTransaction) return null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const provider = new AnchorProvider(connection, wallet as any, { commitment: "confirmed" });
-    return new Program(idl as Idl, provider);
-  }, [connection, wallet]);
+  if (!wallet) return null;
+  const provider = new AnchorProvider(connection, wallet, {});
+  setProvider(provider);
+  return new Program<Judgechain>(idl as any, provider);
 }
 
 export function getSubmissionPda(hackathonPubkey: web3.PublicKey, participantPubkey: web3.PublicKey) {

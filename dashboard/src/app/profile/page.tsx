@@ -41,41 +41,38 @@ export default function ProfilePage() {
   }, []);
 
   const fetchUserData = useCallback(async () => {
-    if (!program || !publicKey) return;
+    if (!publicKey) return;
     setLoading(true);
     try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/submissions?wallet=${publicKey.toBase58()}`
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const allSubmissions = await (program.account as any).submission.all([
-        { memcmp: { offset: 8 + 32, bytes: publicKey.toBase58() } }
-      ]);
-
+      const data: any[] = await res.json();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const allScores = await (program.account as any).scoreHash.all();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const allCerts = await (program.account as any).certificate.all();
-
-      const merged = allSubmissions.map((s: any) => ({
-        pubkey: s.publicKey,
-        account: s.account,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        score: allScores.find((sc: any) => sc.account.submissionId.equals(s.publicKey))?.account,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        certificate: allCerts.find((c: any) => c.account.submissionId.equals(s.publicKey))?.account,
+      const mapped: UserSubmission[] = data.map((s: any) => ({
+        pubkey: new web3.PublicKey(s.wallet),
+        account: { problemId: s.problem_id, repoUrl: s.repo_url ?? "" },
+        score: s.system_score
+          ? { systemScore: s.system_score.total, judgeScore: s.judge_score ?? 0, finalScore: s.final_score ?? s.system_score.total }
+          : undefined,
+        certificate: s.certificate ?? null,
+        submissionId: s.submission_id,
       }));
-
-      setSubmissions(merged);
+      setSubmissions(mapped);
     } catch (err: unknown) {
       console.error(err);
       toast.error("Failed to load your projects.");
     } finally {
       setLoading(false);
     }
-  }, [program, publicKey]);
+  }, [publicKey]);
 
   useEffect(() => {
-    if (!program || !publicKey) return;
+    if (!publicKey) return;
     fetchUserData();
-  }, [program, publicKey, fetchUserData]);
+  }, [publicKey, fetchUserData]);
 
   async function claimCertificate(sub: UserSubmission) {
     if (!publicKey || !program) return;
@@ -118,10 +115,10 @@ export default function ProfilePage() {
 
       toast.success("Certificate minted! Check your wallet.", { id: toastId });
       fetchUserData();
-    } catch (err: any) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || "Minting failed", { id: toastId });
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error(errorMessage || "Minting failed", { id: toastId });
     }
   }
 
