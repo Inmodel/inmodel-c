@@ -14,9 +14,8 @@ const getServerSnapshot = () => false;
 export function WalletProviders({ children }: { children: React.ReactNode }) {
   const isClient = useSyncExternalStore(emptySubscribe, getSnapshot, getServerSnapshot);
   
-  // To avoid hydration mismatch, we only render the wallet provider on the client
   if (!isClient) {
-    return <>{children}</>;
+    return null;
   }
 
   return <WalletProviderInner>{children}</WalletProviderInner>;
