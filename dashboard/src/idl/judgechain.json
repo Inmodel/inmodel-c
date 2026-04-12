@@ -204,6 +204,56 @@
       ]
     },
     {
+      "name": "finalize_hackathon",
+      "discriminator": [
+        174,
+        245,
+        240,
+        251,
+        218,
+        172,
+        251,
+        74
+      ],
+      "accounts": [
+        {
+          "name": "organizer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "hackathon"
+          ]
+        },
+        {
+          "name": "hackathon",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  99,
+                  107,
+                  97,
+                  116,
+                  104,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "organizer"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "issue_certificate",
       "discriminator": [
         61,
@@ -352,6 +402,9 @@
           "name": "submission"
         },
         {
+          "name": "hackathon"
+        },
+        {
           "name": "score_hash",
           "writable": true,
           "pda": {
@@ -458,6 +511,16 @@
       "code": 6001,
       "name": "ScoreTooLow",
       "msg": "Score is too low to receive a certificate"
+    },
+    {
+      "code": 6002,
+      "name": "HackathonInactive",
+      "msg": "The hackathon is no longer active"
+    },
+    {
+      "code": 6003,
+      "name": "HackathonNotFinalized",
+      "msg": "The hackathon results must be finalized before issuing certificates"
     }
   ],
   "types": [

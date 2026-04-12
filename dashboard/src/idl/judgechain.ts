@@ -210,6 +210,56 @@ export type Judgechain = {
       ]
     },
     {
+      "name": "finalizeHackathon",
+      "discriminator": [
+        174,
+        245,
+        240,
+        251,
+        218,
+        172,
+        251,
+        74
+      ],
+      "accounts": [
+        {
+          "name": "organizer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "hackathon"
+          ]
+        },
+        {
+          "name": "hackathon",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  99,
+                  107,
+                  97,
+                  116,
+                  104,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "organizer"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "issueCertificate",
       "discriminator": [
         61,
@@ -358,6 +408,9 @@ export type Judgechain = {
           "name": "submission"
         },
         {
+          "name": "hackathon"
+        },
+        {
           "name": "scoreHash",
           "writable": true,
           "pda": {
@@ -464,6 +517,16 @@ export type Judgechain = {
       "code": 6001,
       "name": "scoreTooLow",
       "msg": "Score is too low to receive a certificate"
+    },
+    {
+      "code": 6002,
+      "name": "hackathonInactive",
+      "msg": "The hackathon is no longer active"
+    },
+    {
+      "code": 6003,
+      "name": "hackathonNotFinalized",
+      "msg": "The hackathon results must be finalized before issuing certificates"
     }
   ],
   "types": [

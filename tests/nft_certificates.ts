@@ -58,7 +58,6 @@ describe("judgechain-nft", () => {
           .createHackathon(hackathonName)
           .accounts({
             organizer: organizer.publicKey,
-            systemProgram: anchor.web3.SystemProgram.programId,
           })
           .rpc();
 
@@ -69,7 +68,6 @@ describe("judgechain-nft", () => {
             payer: organizer.publicKey,
             collection: collection.publicKey,
             coreProgram: CORE_PROGRAM_ID,
-            systemProgram: anchor.web3.SystemProgram.programId,
           })
           .signers([collection])
           .rpc();
@@ -80,21 +78,27 @@ describe("judgechain-nft", () => {
           .accounts({
             participant: participant.publicKey,
             hackathon: hackathonPda,
-            systemProgram: anchor.web3.SystemProgram.programId,
           })
           .signers([participant])
           .rpc();
 
         // Score must be >= 50 for certificate to issue
-        const judge = Keypair.generate(); // Simulate a judge
+        const judge = organizer.publicKey; // Simulator organizer as judge
         await program.methods
           .scoreSubmission(80, 90, "ipfs://cid-score")
           .accounts({
-            judge: judge.publicKey,
+            judge: judge,
             submission: submissionPda,
-            systemProgram: anchor.web3.SystemProgram.programId,
           })
-          .signers([judge])
+          .rpc();
+
+        // Finalize Hackathon before issuing certificate
+        await program.methods
+          .finalizeHackathon()
+          .accounts({
+            organizer: organizer.publicKey,
+            hackathon: hackathonPda,
+          })
           .rpc();
 
         // 5. Issue soulbound certificate
@@ -110,7 +114,6 @@ describe("judgechain-nft", () => {
             asset: asset.publicKey,
             collection: collection.publicKey,
             coreProgram: CORE_PROGRAM_ID,
-            systemProgram: anchor.web3.SystemProgram.programId,
           })
           .signers([asset])
           .rpc();

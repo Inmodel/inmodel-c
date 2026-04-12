@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { BentoCard } from "../../components/ui/BentoCard";
 import { toast } from "sonner";
@@ -14,6 +15,7 @@ type Hackathon = {
 
 export default function OrganizerDashboard() {
   const { publicKey } = useWallet();
+  const router = useRouter();
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -76,7 +78,7 @@ export default function OrganizerDashboard() {
                   tagText="ON-CHAIN HACKATHON"
                   icon="🌐"
                   actionText="Manage"
-                  onAction={() => toast.info("Management panel coming soon.")}
+                  onAction={() => router.push(`/organizer/${h.pubkey}`)}
                 />
               ))}
             </div>

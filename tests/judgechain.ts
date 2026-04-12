@@ -50,7 +50,6 @@ describe("judgechain", () => {
       .createHackathon("Test Hackathon")
       .accounts({
         organizer: organizer.publicKey,
-        systemProgram: SystemProgram.programId,
       })
       .rpc();
 
@@ -67,7 +66,6 @@ describe("judgechain", () => {
       .accounts({
         participant: participant.publicKey,
         hackathon: hackathonPda,
-        systemProgram: SystemProgram.programId,
       })
       .signers([participant])
       .rpc();
@@ -88,7 +86,6 @@ describe("judgechain", () => {
       .accounts({
         judge: judge.publicKey,
         submission: submissionPda,
-        systemProgram: SystemProgram.programId,
       })
       .signers([judge])
       .rpc();
@@ -96,7 +93,7 @@ describe("judgechain", () => {
     const account = await program.account.scoreHash.fetch(scorePda);
     expect(account.systemScore).to.equal(80);
     expect(account.judgeScore).to.equal(90);
-    expect(account.finalScore).to.equal(85); // (80/2) + (90/2)
+    expect(account.finalScore).to.equal(83); // (80 * 7 + 90 * 3) / 10 = 83
     expect(account.ipfsCid).to.equal("ipfs://QmTestCid");
   });
 
@@ -112,19 +109,31 @@ describe("judgechain", () => {
         .accounts({
           judge: judge2.publicKey,
           submission: submissionPda,
-          systemProgram: SystemProgram.programId,
         })
         .signers([judge2])
         .rpc();
       expect.fail("Expected re-score to fail");
     } catch (err) {
-      // Account already exists — Anchor init constraint rejects it
       expect(err.message).to.include("already in use");
     }
   });
 
-  // ── Task 5: issue_certificate — score >= 50 passes ───────────────────────
-  it("issue_certificate — mints soulbound NFT when score >= 50", async () => {
+  // ── Task 5: finalize_hackathon ──────────────────────────────────────────
+  it("finalize_hackathon — locks the hackathon", async () => {
+    await program.methods
+      .finalizeHackathon()
+      .accounts({
+        organizer: organizer.publicKey,
+        hackathon: hackathonPda,
+      })
+      .rpc();
+
+    const account = await program.account.hackathon.fetch(hackathonPda);
+    expect(account.isActive).to.be.false;
+  });
+
+  // ── Task 6: issue_certificate — score >= 50 passes ───────────────────────
+  it("issue_certificate — mints soulbound NFT when score >= 50 and finalized", async () => {
     const tx = await program.methods
       .issueCertificate("https://arweave.net/cert.json", "JudgeChain Certificate #1")
       .accounts({
@@ -134,7 +143,6 @@ describe("judgechain", () => {
         asset: asset.publicKey,
         collection: collection.publicKey,
         coreProgram: MPL_CORE_PROGRAM_ID,
-        systemProgram: SystemProgram.programId,
       })
       .signers([asset])
       .rpc();
@@ -167,7 +175,6 @@ describe("judgechain", () => {
       .accounts({
         participant: lowParticipant.publicKey,
         hackathon: hackathonPda,
-        systemProgram: SystemProgram.programId,
       })
       .signers([lowParticipant])
       .rpc();
@@ -181,7 +188,6 @@ describe("judgechain", () => {
       .accounts({
         judge: judge.publicKey,
         submission: lowSubmissionPda,
-        systemProgram: SystemProgram.programId,
       })
       .signers([judge])
       .rpc();
@@ -196,7 +202,6 @@ describe("judgechain", () => {
           asset: lowAsset.publicKey,
           collection: collection.publicKey,
           coreProgram: MPL_CORE_PROGRAM_ID,
-          systemProgram: SystemProgram.programId,
         })
         .signers([lowAsset])
         .rpc();

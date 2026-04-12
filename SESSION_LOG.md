@@ -413,3 +413,7 @@
 **Status:** SUCCESS
 **Summary:** 📝 meta: update agent docs, session log, and config files
 
+2026-04-12T18:31:00Z | [Agent: Orchestrator] Researching on-chain score finalization. Discovered weight discrepancy (70/30 backend vs 50/50 chain). Planning to add 'finalize' logic.
+2026-04-12T18:35:40Z | [Agent: Orchestrator] Completed on-chain score finalization. Added 'finalize_hackathon' instruction, synced 70/30 weighting, and built Organizer Management Panel.
+2026-04-13T00:16:17Z | [Agent: Orchestrator] Fixing TypeScript and ABI errors in dashboard and tests.
+2026-04-12T18:53:35Z | [Agent: Orchestrator] Resolved final TS errors by aligning with Anchor 0.30 Account Resolution and strict IDL typing.
