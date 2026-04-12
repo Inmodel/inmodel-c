@@ -50,7 +50,7 @@ describe("judgechain-nft", () => {
       program.programId
     );
 
-    const CORE_PROGRAM_ID = new PublicKey("CoRENoZunvK2Asi40wn-Dummies-ID-For-Test");
+    const CORE_PROGRAM_ID = new PublicKey("CoRENoZunvK2Asi40wnDummiesIDForTest11111111");
 
     try {
         // 2. Initialize Hackathon Account
