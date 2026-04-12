@@ -2,14 +2,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Navbar } from "../components/Navbar";
 import { toast } from "sonner";
 
 type Hackathon = {
   name: string;
   organizer: string;
   pubkey: string;
-  problems: any[];
+  problems: unknown[];
 };
 
 export default function OrganizerDashboard() {
@@ -29,7 +28,6 @@ export default function OrganizerDashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Navbar />
       <main className="flex flex-col items-center px-6 py-16 flex-1">
         <div className="w-full max-w-4xl">
           <div className="flex justify-between items-center mb-10">
@@ -57,7 +55,7 @@ export default function OrganizerDashboard() {
              </div>
           ) : hackathons.length === 0 ? (
             <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-card/50">
-              <p className="text-muted">You haven't created any hackathons yet.</p>
+              <p className="text-muted">You haven&apos;t created any hackathons yet.</p>
               <Link href="/organizer/new" className="text-accent hover:underline mt-2 inline-block font-medium">
                 Create your first hackathon →
               </Link>
