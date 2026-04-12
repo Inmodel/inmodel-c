@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Mono, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { WalletProviders } from "./providers";
 import { Toaster } from "sonner";
 import "./globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { Sidebar } from "@/components/Sidebar";
+import { WalletButton } from "@/components/WalletButton";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const spaceMono = Space_Mono({ variable: "--font-display", subsets: ["latin"], weight: ["400", "700"] });
+const dmSans = DM_Sans({ variable: "--font-body", subsets: ["latin"], weight: ["300", "400", "500"] });
+const jetbrainsMono = JetBrains_Mono({ variable: "--font-data", subsets: ["latin"], weight: ["300", "400", "500", "700"] });
 
 export const metadata: Metadata = {
   title: "JudgeChain | On-Chain Hackathon Scoring",
@@ -15,11 +18,23 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="en" className={`${spaceMono.variable} ${dmSans.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body>
         <WalletProviders>
-          {children}
-          <Toaster position="bottom-right" theme="light" expand={true} richColors />
+          <div className="layout-root">
+            <div style={{ gridRow: "1 / -1", gridColumn: "1" }}>
+               <Sidebar />
+            </div>
+            
+            <header style={{ gridColumn: "2", gridRow: "1", display: "flex", justifyContent: "flex-end", alignItems: "center", padding: "0 24px", borderBottom: "1px solid var(--bg-border)", background: "var(--bg-base)" }}>
+               <WalletButton />
+            </header>
+
+            <div style={{ gridColumn: "2", gridRow: "2", overflowY: "auto", position: "relative" }}>
+              {children}
+            </div>
+          </div>
+          <Toaster position="bottom-right" theme="dark" expand={false} richColors toastOptions={{ className: 'toast' }} />
         </WalletProviders>
       </body>
     </html>
