@@ -66,12 +66,12 @@ def save(db: Session, data: dict, repo_url: str, deployment_url: str) -> None:
     db.commit()
 
 
-def apply_judge_score(db: Session, submission_id: str, judge_score: float, tx_hash: Optional[str] = None) -> Optional[dict]:
+def apply_judge_score(db: Session, submission_id: str, judge_score: float, tx_hash: Optional[str] = None, final_score: Optional[float] = None) -> Optional[dict]:
     row = db.get(Submission, submission_id)
     if not row:
         return None
     row.judge_score = judge_score
-    row.final_score = round((row.score_total * 0.7) + (judge_score * 0.3))
+    row.final_score = int(final_score) if final_score is not None else int((row.score_total * 7 + judge_score * 3) // 10)
     row.judge_submitted = True
     if tx_hash:
         row.tx_hash = tx_hash
@@ -81,10 +81,11 @@ def apply_judge_score(db: Session, submission_id: str, judge_score: float, tx_ha
 
 
 def leaderboard(db: Session, problem_id: str) -> list[dict]:
+    from sqlalchemy import case
     rows = (
         db.query(Submission)
         .filter_by(problem_id=problem_id)
-        .order_by(Submission.score_total.desc())
+        .order_by(case((Submission.final_score != None, Submission.final_score), else_=Submission.score_total).desc())
         .all()
     )
     return [_to_dict(r) for r in rows]
