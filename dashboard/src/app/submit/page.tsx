@@ -1,13 +1,16 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { web3 } from "@coral-xyz/anchor";
-import { Navbar } from "../components/Navbar";
-import { SolscanLink } from "@/components/SolscanLink";
 import { api } from "@/lib/api";
-import { useProgram, getSubmissionPda, getScorePda, PROGRAM_ID } from "@/lib/useProgram";
+import { useProgram, getSubmissionPda } from "@/lib/useProgram";
 import { toast } from "sonner";
 import { ScoreResult, ProblemMetadata, SystemScore } from "@/types";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { ScoreRing } from "@/components/ui/ScoreRing";
+import { ScoreBar } from "@/components/ui/ScoreBar";
+import { ChainConfirm } from "@/components/ui/ChainConfirm";
 
 const HACKATHON_PUBKEY = new web3.PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
@@ -60,7 +63,6 @@ export default function SubmitPage() {
     const scoringToast = toast.loading("AI is analyzing your submission...");
 
     try {
-      // 1. Sign
       let signature = "";
       if (signMessage) {
         const bodyStr = JSON.stringify(payload);
@@ -69,69 +71,60 @@ export default function SubmitPage() {
         signature = Buffer.from(sigBytes).toString("base64");
       }
 
-      // 2. Submit to Backend
       const scoreData = await api.submitScore(payload, signature);
       setResult(scoreData);
       toast.success("Scoring complete!", { id: scoringToast });
 
-      // 3. On-chain Write (Optional/Auto)
       if (program && publicKey) {
         const chainToast = toast.loading("Recording on-chain...");
         try {
           const [submissionPda] = getSubmissionPda(HACKATHON_PUBKEY, publicKey);
-          const [scorePda] = getScorePda(submissionPda);
 
-          // Try create submission if not exists
           try {
-            await (program as any).methods
+            await program.methods
               .createSubmission(form.problem_id, form.repo_url, form.deployment_url)
               .accounts({
                 participant: publicKey,
                 hackathon: HACKATHON_PUBKEY,
-                submission: submissionPda,
-                systemProgram: web3.SystemProgram.programId,
               })
               .rpc();
-          } catch (e) { /* ignore if exists */ }
+          } catch { /* ignore if exists */ }
 
-          const sig = await (program as any).methods
+          const sig = await program.methods
             .scoreSubmission(scoreData.system_score.total, 0, "")
             .accounts({
               judge: publicKey,
               submission: submissionPda,
-              scoreHash: scorePda,
-              systemProgram: web3.SystemProgram.programId,
             })
             .rpc();
             
           setTxSig(sig);
           toast.success("Recorded on Solana!", { id: chainToast });
-        } catch (err: any) {
-          toast.warning(`On-chain record skipped: ${err.message}`, { id: chainToast });
+        } catch (err: unknown) {
+          const errorMessage = err instanceof Error ? err.message : String(err);
+          toast.warning(`On-chain record skipped: ${errorMessage}`, { id: chainToast });
         }
       }
-    } catch (err: any) {
-      toast.error(err.message, { id: scoringToast });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error(errorMessage, { id: scoringToast });
     } finally {
       setIsLoading(false);
     }
   }
 
-  return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Navbar />
-      <main className="flex flex-col items-center px-6 py-16 flex-1">
-        <div className="w-full max-w-lg rounded-xl border border-card-border p-8 bg-card shadow-sm">
-          <h1 className="text-2xl font-bold mb-1">Submit Project</h1>
-          <p className="text-sm mb-6 text-muted">
-            {publicKey ? `Connected: ${publicKey.toBase58().slice(0, 8)}...` : "Please connect your wallet"}
-          </p>
+  const previewScore = form.repo_url.length > 10 ? 30 : 0;
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+  return (
+    <main className="content-area pt-8">
+      <div className="bento-leader bg-surface border border-border p-6 rounded-lg">
+        <h1 className="text-xl font-display uppercase tracking-widest mb-6">Submit Execution</h1>
+        
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label className="text-xs font-medium block mb-1 uppercase tracking-wider text-muted">Problem</label>
+              <label className="input-label">Problem Target</label>
               <select
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-accent transition-all"
+                className="input-field"
                 value={form.problem_id}
                 onChange={(e) => setForm({ ...form, problem_id: e.target.value })}
                 required
@@ -143,73 +136,81 @@ export default function SubmitPage() {
               </select>
             </div>
 
-            {[
-              { id: "repo_url", label: "Repo URL", type: "url", placeholder: "https://github.com/..." },
-              { id: "deployment_url", label: "Deployment URL", type: "url", placeholder: "https://..." }
-            ].map(field => (
-              <div key={field.id}>
-                <label className="text-xs font-medium block mb-1 uppercase tracking-wider text-muted">{field.label}</label>
-                <input
-                  type={field.type}
-                  placeholder={field.placeholder}
-                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-accent transition-all"
-                  value={(form as any)[field.id]}
-                  onChange={(e) => setForm({ ...form, [field.id]: e.target.value })}
-                  required
-                />
-              </div>
-            ))}
+            <Input 
+              label="Repository URL" 
+              type="url" 
+              placeholder="https://github.com/..."
+              value={form.repo_url}
+              onChange={(e) => setForm({...form, repo_url: e.target.value})}
+              required
+            />
+
+            <Input 
+              label="Deployment URL" 
+              type="url" 
+              placeholder="https://..."
+              value={form.deployment_url}
+              onChange={(e) => setForm({...form, deployment_url: e.target.value})}
+              required
+            />
 
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-medium uppercase tracking-wider text-muted">Coverage %</label>
-                <span className="text-accent font-mono font-bold text-sm">{form.coverage}%</span>
+              <div className="flex justify-between items-center mb-2">
+                <label className="input-label">Test Coverage</label>
+                <span className="text-amber-base font-data text-sm">{form.coverage}%</span>
               </div>
               <input
                 type="range"
                 min="0"
                 max="100"
-                className="w-full accent-accent h-2 bg-muted/20 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-elevated rounded appearance-none cursor-pointer border border-border"
                 value={form.coverage}
                 onChange={(e) => setForm({ ...form, coverage: e.target.value })}
+                style={{ background: `linear-gradient(to right, var(--amber-base) ${form.coverage}%, var(--bg-elevated) ${form.coverage}%)` }}
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading || !publicKey}
-              className="mt-4 py-2.5 rounded-md text-sm font-bold bg-accent text-white hover:opacity-90 disabled:opacity-50 transition-all shadow-md active:scale-[0.98]"
-            >
-              {isLoading ? "Analyzing..." : "Submit & Score"}
-            </button>
-          </form>
+            <Button type="submit" disabled={isLoading || !publicKey} className="mt-4 w-full">
+               {isLoading ? "Executing..." : "Initialize Scoring"}
+            </Button>
+            
+            {!publicKey && (
+               <div className="text-red-base font-data text-xs mt-2 uppercase">Requires Wallet Connection</div>
+            )}
+        </form>
+      </div>
 
-          {result && (
-            <div className="mt-8 p-6 rounded-lg border border-card-border bg-background/50 animate-in fade-in duration-500">
-              <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">Score Breakdown</h3>
-              <table className="w-full text-sm">
-                <tbody>
-                  {(Object.entries(result.system_score) as [keyof SystemScore, number][]).map(([key, value]) => (
-                    <tr key={key} className={key === "total" ? "border-t border-border font-bold text-base" : ""}>
-                      <td className="py-2 text-muted">{SCORE_FIELD_LABELS[key]}</td>
-                      <td className={`py-2 text-right ${key === "total" ? "text-accent" : "text-foreground"}`}>
-                        {value} {key === "total" && <span className="text-xs text-muted font-normal">/ 70</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div className="bento-score bg-surface border border-border p-6 rounded-lg flex flex-col items-center">
+        <h2 className="text-sm font-data uppercase tracking-widest text-secondary w-full mb-6">Live Evaluation Array</h2>
 
-              {(txSig || result.tx_hash) && (
-                <div className="mt-6 pt-4 border-t border-border flex justify-between items-center">
-                  <span className="text-xs text-muted font-mono">TX Proof:</span>
-                  <SolscanLink tx={txSig || result.tx_hash || ""} />
-                </div>
-              )}
-            </div>
-          )}
+        <div className="w-full mb-8">
+           {result ? (
+               <div className="space-y-4">
+                 {(Object.entries(result.system_score) as [keyof SystemScore, number][]).filter(([k]) => k !== 'total').map(([key, value]) => (
+                     <ScoreBar key={key} label={SCORE_FIELD_LABELS[key]} score={value} max={key === 'code_quality' ? 20 : (key === 'test_coverage' || key === 'deployment_health' || key === 'documentation') ? 15 : 5} />
+                 ))}
+               </div>
+           ) : (
+               <div className="space-y-4 opacity-50">
+                 <ScoreBar label="Code Quality" score={previewScore > 0 ? 12 : 0} max={20} />
+                 <ScoreBar label="Test Coverage" score={parseInt(form.coverage) > 0 ? parseInt(form.coverage)*0.15 : 0} max={15} />
+                 <ScoreBar label="Deployment Health" score={0} max={15} />
+                 <ScoreBar label="Documentation" score={0} max={15} />
+               </div>
+           )}
         </div>
-      </main>
-    </div>
+
+        <div className="mt-auto flex flex-col items-center">
+          <ScoreRing score={result ? result.system_score.total : previewScore} max={70} size={140} />
+          {result && <div className="mt-4 font-data text-xs text-amber-base uppercase tracking-widest animate-pulse">Analysis Complete</div>}
+        </div>
+
+        {txSig && (
+          <div className="w-full mt-8 animate-in slide-in-from-bottom flex flex-col">
+            <ChainConfirm txHash={txSig} />
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
