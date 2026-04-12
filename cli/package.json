@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "CLI to submit Hackathon projects to JudgeNod on Solana",
   "main": "index.js",
+  "bin": {
+    "judgenod": "dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
