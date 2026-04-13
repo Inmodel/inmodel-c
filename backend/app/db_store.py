@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.db_models import Submission
 
 
-def _status(s: Submission) -> str:
+def status(s: Submission) -> str:
     if s.tx_hash:
         return "anchored"
     if s.final_score is not None:
@@ -11,7 +11,7 @@ def _status(s: Submission) -> str:
     return "scored"
 
 
-def _to_dict(s: Submission) -> dict:
+def to_dict(s: Submission) -> dict:
     return {
         "submission_id": s.submission_id,
         "problem_id": s.problem_id,
@@ -28,23 +28,23 @@ def _to_dict(s: Submission) -> dict:
         "final_score": s.final_score,
         "tx_hash": s.tx_hash,
         "judge_submitted": s.judge_submitted,
-        "status": _status(s),
+        "status": status(s),
     }
 
 
 def get_by_id(db: Session, submission_id: str) -> Optional[dict]:
     row = db.get(Submission, submission_id)
-    return _to_dict(row) if row else None
+    return to_dict(row) if row else None
 
 
 def get_by_wallet(db: Session, problem_id: str, wallet: str) -> Optional[dict]:
     row = db.query(Submission).filter_by(problem_id=problem_id, wallet=wallet).first()
-    return _to_dict(row) if row else None
+    return to_dict(row) if row else None
 
 
 def get_all_by_wallet(db: Session, wallet: str) -> list[dict]:
     rows = db.query(Submission).filter_by(wallet=wallet).order_by(Submission.created_at.desc()).all()
-    return [_to_dict(r) for r in rows]
+    return [to_dict(r) for r in rows]
 
 
 def save(db: Session, data: dict, repo_url: str, deployment_url: str) -> None:
@@ -77,7 +77,7 @@ def apply_judge_score(db: Session, submission_id: str, judge_score: float, tx_ha
         row.tx_hash = tx_hash
     db.commit()
     db.refresh(row)
-    return _to_dict(row)
+    return to_dict(row)
 
 
 def leaderboard(db: Session, problem_id: str) -> list[dict]:
@@ -88,4 +88,4 @@ def leaderboard(db: Session, problem_id: str) -> list[dict]:
         .order_by(case((Submission.final_score != None, Submission.final_score), else_=Submission.score_total).desc())
         .all()
     )
-    return [_to_dict(r) for r in rows]
+    return [to_dict(r) for r in rows]
