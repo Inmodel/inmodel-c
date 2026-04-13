@@ -429,7 +429,11 @@ program.command('init')
           const s2 = p.spinner();
           s2.start('Minting your certificate on-chain...');
           try {
-            const res = await fetch(`${API_URL}/certificate/${result.submission_id}`, { method: 'POST' });
+            const sig = Buffer.from(nacl.sign.detached(Buffer.from(result.submission_id), keypair.secretKey)).toString('base64');
+            const res = await fetch(`${API_URL}/certificate/${result.submission_id}`, {
+              method: 'POST',
+              headers: { 'x-signature': sig },
+            });
             const certData = await res.json() as { metadata_uri: string; tx_sig: string; detail?: string };
             if (!res.ok) throw new Error(certData.detail || 'Mint failed');
             s2.stop('Certificate minted!');
