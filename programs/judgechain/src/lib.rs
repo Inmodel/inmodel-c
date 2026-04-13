@@ -10,9 +10,11 @@ declare_id!("9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2");
 pub mod judgechain {
     use super::*;
 
-    pub fn create_hackathon(ctx: Context<CreateHackathon>, name: String) -> Result<()> {
+    pub fn create_hackathon(ctx: Context<CreateHackathon>, id: u32, name: String) -> Result<()> {
+        require!(name.len() <= 64, JudgeChainError::StringTooLong);
         let hackathon = &mut ctx.accounts.hackathon;
         hackathon.organizer = ctx.accounts.organizer.key();
+        hackathon.id = id;
         hackathon.name = name;
         hackathon.is_active = true;
         Ok(())
@@ -32,6 +34,7 @@ pub mod judgechain {
             .invoke_signed(&[&[
                 b"hackathon",
                 ctx.accounts.hackathon.organizer.as_ref(),
+                &ctx.accounts.hackathon.id.to_le_bytes(),
                 &[ctx.bumps.hackathon],
             ]])?;
 
@@ -51,6 +54,10 @@ pub mod judgechain {
         deployment_url: String,
     ) -> Result<()> {
         require!(ctx.accounts.hackathon.is_active, JudgeChainError::HackathonInactive);
+        require!(problem_id.len() <= 50, JudgeChainError::StringTooLong);
+        require!(repo_url.len() <= 100, JudgeChainError::StringTooLong);
+        require!(deployment_url.len() <= 100, JudgeChainError::StringTooLong);
+
         let submission = &mut ctx.accounts.submission;
         submission.hackathon_id = ctx.accounts.hackathon.key();
         submission.participant_wallet = ctx.accounts.participant.key();
@@ -68,6 +75,7 @@ pub mod judgechain {
     ) -> Result<()> {
         require!(ctx.accounts.hackathon.is_active, JudgeChainError::HackathonInactive);
         require!(system_score <= 100 && judge_score <= 100, JudgeChainError::InvalidScore);
+        require!(ipfs_cid.len() <= 64, JudgeChainError::StringTooLong);
         
         let score = &mut ctx.accounts.score_hash;
         score.submission_id = ctx.accounts.submission.key();
@@ -75,6 +83,7 @@ pub mod judgechain {
         score.judge_score = judge_score;
         
         // Weighting: 70% System, 30% Judge
+        // Use integer math that matches backend (Issue 6)
         let system_part = (system_score as u16 * 7) / 10;
         let judge_part = (judge_score as u16 * 3) / 10;
         score.final_score = (system_part + judge_part) as u8;
@@ -93,6 +102,8 @@ pub mod judgechain {
         
         // Enforce basic minimum score threshold
         require!(ctx.accounts.score_hash.final_score >= 50, JudgeChainError::ScoreTooLow);
+        require!(metadata_uri.len() <= 200, JudgeChainError::StringTooLong);
+        require!(name.len() <= 64, JudgeChainError::StringTooLong);
 
         let certificate = &mut ctx.accounts.certificate;
         let clock = Clock::get()?;
@@ -118,6 +129,7 @@ pub mod judgechain {
             .invoke_signed(&[&[
                 b"hackathon",
                 ctx.accounts.hackathon.organizer.as_ref(),
+                &ctx.accounts.hackathon.id.to_le_bytes(),
                 &[ctx.bumps.hackathon],
             ]])?;
 
@@ -128,7 +140,7 @@ pub mod judgechain {
 // --- Contexts ---
 
 #[derive(Accounts)]
-#[instruction(name: String)]
+#[instruction(id: u32, name: String)]
 pub struct CreateHackathon<'info> {
     #[account(mut)]
     pub organizer: Signer<'info>,
@@ -136,8 +148,8 @@ pub struct CreateHackathon<'info> {
     #[account(
         init,
         payer = organizer,
-        space = 8 + 32 + 4 + 64 + 1,
-        seeds = [b"hackathon", organizer.key().as_ref()],
+        space = 8 + 32 + 4 + 4 + 64 + 1,
+        seeds = [b"hackathon", organizer.key().as_ref(), &id.to_le_bytes()],
         bump
     )]
     pub hackathon: Account<'info, Hackathon>,
@@ -154,7 +166,7 @@ pub struct CreateCollection<'info> {
     pub collection: Signer<'info>,
 
     #[account(
-        seeds = [b"hackathon", hackathon.organizer.as_ref()],
+        seeds = [b"hackathon", hackathon.organizer.as_ref(), &hackathon.id.to_le_bytes()],
         bump
     )]
     pub hackathon: Account<'info, Hackathon>,
@@ -173,7 +185,7 @@ pub struct FinalizeHackathon<'info> {
     #[account(
         mut,
         has_one = organizer,
-        seeds = [b"hackathon", organizer.key().as_ref()],
+        seeds = [b"hackathon", organizer.key().as_ref(), &hackathon.id.to_le_bytes()],
         bump
     )]
     pub hackathon: Account<'info, Hackathon>,
@@ -207,13 +219,12 @@ pub struct ScoreSubmission<'info> {
 
     #[account(
         has_one = organizer @ JudgeChainError::Unauthorized,
-        seeds = [b"hackathon", hackathon.organizer.as_ref()],
+        seeds = [b"hackathon", hackathon.organizer.as_ref(), &hackathon.id.to_le_bytes()],
         bump
     )]
     pub hackathon: Account<'info, Hackathon>,
 
-    /// CHECK: organizer must sign to authorize scoring
-    pub organizer: UncheckedAccount<'info>,
+    pub organizer: Signer<'info>,
 
     #[account(
         init,
@@ -260,7 +271,7 @@ pub struct IssueCertificate<'info> {
     pub collection: UncheckedAccount<'info>,
 
     #[account(
-        seeds = [b"hackathon", hackathon.organizer.as_ref()],
+        seeds = [b"hackathon", hackathon.organizer.as_ref(), &hackathon.id.to_le_bytes()],
         bump
     )]
     pub hackathon: Account<'info, Hackathon>,
@@ -276,6 +287,7 @@ pub struct IssueCertificate<'info> {
 #[account]
 pub struct Hackathon {
     pub organizer: Pubkey,   // 32
+    pub id: u32,             // 4
     pub name: String,        // 4 + 64
     pub is_active: bool,     // 1
 }
@@ -319,4 +331,6 @@ pub enum JudgeChainError {
     HackathonNotFinalized,
     #[msg("Only the hackathon organizer can perform this action")]
     Unauthorized,
+    #[msg("String input is too long")]
+    StringTooLong,
 }
