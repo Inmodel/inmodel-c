@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, B
 from sqlalchemy.orm import Session
 from app.models.schemas import SubmissionInput, ScoreResponse
 from app.scoring.engine import execute_scoring_pipeline
-from app.api.auth import verify_solana_signature
+from app.api.auth import require_solana_signature
 from app.scoring.solana_client import record_score_on_chain
 from app.database import get_db
 from app import db_store
@@ -19,12 +19,8 @@ async def submit_and_score(
     x_signature: str = Header(None),
     db: Session = Depends(get_db),
 ):
-    if not x_signature:
-        raise HTTPException(status_code=401, detail="Missing x-signature header")
-
     body_bytes = await request.body()
-    if not verify_solana_signature(submission.participant_wallet, body_bytes.decode(), x_signature):
-        raise HTTPException(status_code=401, detail="Invalid signature")
+    require_solana_signature(submission.participant_wallet, body_bytes.decode(), x_signature)
 
     existing = db_store.get_by_wallet(db, submission.problem_id, submission.participant_wallet)
     if existing:
@@ -43,6 +39,7 @@ async def submit_and_score(
     background_tasks.add_task(
         record_score_on_chain,
         resp.submission_id,
+        submission.participant_wallet,
         int(sys_score.total),
         0,
         int(sys_score.total),
