@@ -126,6 +126,10 @@
       ],
       "args": [
         {
+          "name": "id",
+          "type": "u32"
+        },
+        {
           "name": "name",
           "type": "string"
         }
@@ -429,6 +433,7 @@
         },
         {
           "name": "organizer",
+          "signer": true,
           "relations": [
             "hackathon"
           ]
@@ -555,6 +560,11 @@
       "code": 6004,
       "name": "Unauthorized",
       "msg": "Only the hackathon organizer can perform this action"
+    },
+    {
+      "code": 6005,
+      "name": "StringTooLong",
+      "msg": "String input is too long"
     }
   ],
   "types": [
@@ -586,6 +596,10 @@
           {
             "name": "organizer",
             "type": "pubkey"
+          },
+          {
+            "name": "id",
+            "type": "u32"
           },
           {
             "name": "name",
