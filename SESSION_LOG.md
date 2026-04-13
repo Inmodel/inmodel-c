@@ -417,3 +417,269 @@
 2026-04-12T18:35:40Z | [Agent: Orchestrator] Completed on-chain score finalization. Added 'finalize_hackathon' instruction, synced 70/30 weighting, and built Organizer Management Panel.
 2026-04-13T00:16:17Z | [Agent: Orchestrator] Fixing TypeScript and ABI errors in dashboard and tests.
 2026-04-12T18:53:35Z | [Agent: Orchestrator] Resolved final TS errors by aligning with Anchor 0.30 Account Resolution and strict IDL typing.
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** d9559b6
+**Timestamp:** 2026-04-12 20:00:07 +0530
+**Status:** SUCCESS
+**Summary:** 📝 docs: update README, agent docs, and add BUILD_STATUS.md to reflect current build state
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 6e39d62
+**Timestamp:** 2026-04-12 21:09:55 +0530
+**Status:** SUCCESS
+**Summary:** feat: update JudgeChain IDL with new collection and certificate issuance instructions
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 53fb91c
+**Timestamp:** 2026-04-12 22:06:17 +0530
+**Status:** SUCCESS
+**Summary:** 🎨 styles: update global CSS styles for dashboard
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** d930ce0
+**Timestamp:** 2026-04-12 22:06:20 +0530
+**Status:** SUCCESS
+**Summary:** 🏗️ layout: update root app layout
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 1696b8f
+**Timestamp:** 2026-04-12 22:06:22 +0530
+**Status:** SUCCESS
+**Summary:** ⚙️ providers: update wallet & app providers
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 243eecb
+**Timestamp:** 2026-04-12 22:06:25 +0530
+**Status:** SUCCESS
+**Summary:** 🏠 home: update landing page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 005c96a
+**Timestamp:** 2026-04-12 22:06:36 +0530
+**Status:** SUCCESS
+**Summary:** 📤 submit: update project submission page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 1e60fd1
+**Timestamp:** 2026-04-12 22:06:39 +0530
+**Status:** SUCCESS
+**Summary:** 🏆 leaderboard: update leaderboard page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** b4bbe1d
+**Timestamp:** 2026-04-12 22:06:41 +0530
+**Status:** SUCCESS
+**Summary:** ⚖️ judge: update judge panel page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 56d34e1
+**Timestamp:** 2026-04-12 22:06:43 +0530
+**Status:** SUCCESS
+**Summary:** 🗂️ organizer: update organizer dashboard page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 0db34d3
+**Timestamp:** 2026-04-12 22:06:46 +0530
+**Status:** SUCCESS
+**Summary:** ➕ organizer/new: update create hackathon page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** b31c4ce
+**Timestamp:** 2026-04-12 22:06:51 +0530
+**Status:** SUCCESS
+**Summary:** 👤 profile: update participant profile page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** b8ef7c6
+**Timestamp:** 2026-04-12 22:06:53 +0530
+**Status:** SUCCESS
+**Summary:** 🧭 sidebar: add new Sidebar navigation component
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 0342733
+**Timestamp:** 2026-04-12 22:06:55 +0530
+**Status:** SUCCESS
+**Summary:** 🧩 ui: add shadcn/ui component library files
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 67ebb48
+**Timestamp:** 2026-04-12 22:06:58 +0530
+**Status:** SUCCESS
+**Summary:** 🗑️ cleanup: remove old Navbar component (replaced by Sidebar)
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 3fbbe47
+**Timestamp:** 2026-04-12 22:30:08 +0530
+**Status:** SUCCESS
+**Summary:** 🐍 backend: update FastAPI main entry point
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** c2dc3f0
+**Timestamp:** 2026-04-12 22:30:08 +0530
+**Status:** SUCCESS
+**Summary:** 🖥️ cli: update CLI submission tool
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 6fa06b6
+**Timestamp:** 2026-04-12 22:30:08 +0530
+**Status:** SUCCESS
+**Summary:** 🗂️ organizer: update organizer dashboard page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 387d120
+**Timestamp:** 2026-04-12 22:30:08 +0530
+**Status:** SUCCESS
+**Summary:** 👤 profile: update participant profile page
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 66b1528
+**Timestamp:** 2026-04-12 22:30:08 +0530
+**Status:** SUCCESS
+**Summary:** 🔌 api: update API client library
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 1b2a733
+**Timestamp:** 2026-04-12 22:30:08 +0530
+**Status:** SUCCESS
+**Summary:** ⛓️ useProgram: update Solana program hook
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 17226c2
+**Timestamp:** 2026-04-12 22:30:08 +0530
+**Status:** SUCCESS
+**Summary:** 🃏 ui: add BentoCard component
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 553cc2f
+**Timestamp:** 2026-04-12 22:51:45 +0530
+**Status:** SUCCESS
+**Summary:** 📄 idl: update JudgeChain IDL JSON
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 849d3ca
+**Timestamp:** 2026-04-12 22:51:46 +0530
+**Status:** SUCCESS
+**Summary:** 🧪 tests: update backend API test script
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 0174e70
+**Timestamp:** 2026-04-12 22:51:46 +0530
+**Status:** SUCCESS
+**Summary:** 📦 cli: update package.json dependencies
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 6349f00
+**Timestamp:** 2026-04-12 22:51:46 +0530
+**Status:** SUCCESS
+**Summary:** 🎖️ tests: update NFT certificate integration tests
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 140bfaf
+**Timestamp:** 2026-04-12 22:51:46 +0530
+**Status:** SUCCESS
+**Summary:** 🗄️ db: update SQLite database snapshot
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 3197a32
+**Timestamp:** 2026-04-12 22:55:25 +0530
+**Status:** SUCCESS
+**Summary:** ⚙️ providers: update wallet & app providers
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 7da760e
+**Timestamp:** 2026-04-13 00:40:17 +0530
+**Status:** SUCCESS
+**Summary:** fix(contract): add organizer auth to ScoreSubmission, increase Submission account space, add Unauthorized error
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** ea28aa8
+**Timestamp:** 2026-04-13 00:40:20 +0530
+**Status:** SUCCESS
+**Summary:** fix(backend): fix UUID->Pubkey PDA bug, implement proper issue_certificate_on_chain instruction
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 6801d76
+**Timestamp:** 2026-04-13 00:40:24 +0530
+**Status:** SUCCESS
+**Summary:** fix(backend): make judge signature verification mandatory, not optional
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 4b4063c
+**Timestamp:** 2026-04-13 00:40:28 +0530
+**Status:** SUCCESS
+**Summary:** fix(backend): add owner auth to certificate endpoint, use correct issue_certificate_on_chain
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 5d78da3
+**Timestamp:** 2026-04-13 00:40:32 +0530
+**Status:** SUCCESS
+**Summary:** fix(backend): leaderboard sorts by final_score, apply_judge_score accepts pre-computed final_score
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** b85ede0
+**Timestamp:** 2026-04-13 00:40:34 +0530
+**Status:** SUCCESS
+**Summary:** fix(backend): replace CORS wildcard with ALLOWED_ORIGINS env var
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** eb0120e
+**Timestamp:** 2026-04-13 00:40:38 +0530
+**Status:** SUCCESS
+**Summary:** fix(backend): use shared httpx.AsyncClient instead of per-request client
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 764a711
+**Timestamp:** 2026-04-13 00:40:40 +0530
+**Status:** SUCCESS
+**Summary:** fix(cli): guard certificate command against missing --submission-id
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 245d241
+**Timestamp:** 2026-04-13 00:41:03 +0530
+**Status:** SUCCESS
+**Summary:** feat: implement hackathon finalization UI and link management panel to on-chain program
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 19f4367
+**Timestamp:** 2026-04-13 00:43:23 +0530
+**Status:** SUCCESS
+**Summary:** docs: update README with project structure, API endpoints, environment variables, and scoring logic details
+

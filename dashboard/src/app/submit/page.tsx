@@ -95,6 +95,7 @@ export default function SubmitPage() {
             .accounts({
               judge: publicKey,
               submission: submissionPda,
+              hackathon: HACKATHON_PUBKEY,
             })
             .rpc();
             

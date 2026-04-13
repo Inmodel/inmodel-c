@@ -1,81 +1,658 @@
 {
-  "version": "0.1.0",
-  "name": "judgechain",
-  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
-  "metadata": { "name": "judgechain", "version": "0.1.0", "spec": "0.1.0" },
+  "address": "9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2",
+  "metadata": {
+    "name": "judgechain",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
   "instructions": [
     {
-      "name": "createHackathon",
-      "discriminator": [0,0,0,0,0,0,0,1],
-      "accounts": [
-        { "name": "organizer", "isMut": true, "isSigner": true },
-        { "name": "hackathon", "isMut": true, "pda": { "seeds": [{ "kind": "const", "value": [104,97,99,107,97,116,104,111,110] }, { "kind": "account", "path": "organizer" }] } },
-        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+      "name": "create_collection",
+      "discriminator": [
+        156,
+        251,
+        92,
+        54,
+        233,
+        2,
+        16,
+        82
       ],
-      "args": [{ "name": "name", "type": "string" }]
-    },
-    {
-      "name": "createSubmission",
-      "discriminator": [0,0,0,0,0,0,0,2],
       "accounts": [
-        { "name": "participant", "isMut": true, "isSigner": true },
-        { "name": "hackathon" },
-        { "name": "submission", "isMut": true, "pda": { "seeds": [{ "kind": "const", "value": [115,117,98,109,105,115,115,105,111,110] }, { "kind": "account", "path": "hackathon" }, { "kind": "account", "path": "participant" }] } },
-        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "hackathon",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  99,
+                  107,
+                  97,
+                  116,
+                  104,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "hackathon.organizer",
+                "account": "Hackathon"
+              }
+            ]
+          }
+        },
+        {
+          "name": "core_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
       ],
       "args": [
-        { "name": "problemId", "type": "string" },
-        { "name": "repoUrl", "type": "string" },
-        { "name": "deploymentUrl", "type": "string" }
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        }
       ]
     },
     {
-      "name": "scoreSubmission",
-      "discriminator": [0,0,0,0,0,0,0,3],
+      "name": "create_hackathon",
+      "discriminator": [
+        228,
+        148,
+        238,
+        246,
+        21,
+        223,
+        47,
+        69
+      ],
       "accounts": [
-        { "name": "judge", "isMut": true, "isSigner": true },
-        { "name": "submission" },
-        { "name": "scoreHash", "isMut": true, "pda": { "seeds": [{ "kind": "const", "value": [115,99,111,114,101] }, { "kind": "account", "path": "submission" }] } },
-        { "name": "systemProgram", "address": "11111111111111111111111111111111" }
+        {
+          "name": "organizer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "hackathon",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  99,
+                  107,
+                  97,
+                  116,
+                  104,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "organizer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
       ],
       "args": [
-        { "name": "systemScore", "type": "u8" },
-        { "name": "judgeScore", "type": "u8" },
-        { "name": "ipfsCid", "type": "string" }
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "create_submission",
+      "discriminator": [
+        85,
+        217,
+        61,
+        59,
+        157,
+        60,
+        175,
+        220
+      ],
+      "accounts": [
+        {
+          "name": "participant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "hackathon"
+        },
+        {
+          "name": "submission",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98,
+                  109,
+                  105,
+                  115,
+                  115,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "hackathon"
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "problem_id",
+          "type": "string"
+        },
+        {
+          "name": "repo_url",
+          "type": "string"
+        },
+        {
+          "name": "deployment_url",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "finalize_hackathon",
+      "discriminator": [
+        174,
+        245,
+        240,
+        251,
+        218,
+        172,
+        251,
+        74
+      ],
+      "accounts": [
+        {
+          "name": "organizer",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "hackathon"
+          ]
+        },
+        {
+          "name": "hackathon",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  99,
+                  107,
+                  97,
+                  116,
+                  104,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "organizer"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "issue_certificate",
+      "discriminator": [
+        61,
+        197,
+        55,
+        28,
+        159,
+        18,
+        132,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "participant"
+        },
+        {
+          "name": "submission"
+        },
+        {
+          "name": "score_hash",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  99,
+                  111,
+                  114,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "submission"
+              }
+            ]
+          }
+        },
+        {
+          "name": "certificate",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  101,
+                  114,
+                  116,
+                  105,
+                  102,
+                  105,
+                  99,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "submission"
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "hackathon",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  99,
+                  107,
+                  97,
+                  116,
+                  104,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "hackathon.organizer",
+                "account": "Hackathon"
+              }
+            ]
+          }
+        },
+        {
+          "name": "core_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "metadata_uri",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "score_submission",
+      "discriminator": [
+        133,
+        77,
+        147,
+        204,
+        107,
+        246,
+        14,
+        194
+      ],
+      "accounts": [
+        {
+          "name": "judge",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "submission"
+        },
+        {
+          "name": "hackathon",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  99,
+                  107,
+                  97,
+                  116,
+                  104,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "hackathon.organizer",
+                "account": "Hackathon"
+              }
+            ]
+          }
+        },
+        {
+          "name": "organizer",
+          "relations": [
+            "hackathon"
+          ]
+        },
+        {
+          "name": "score_hash",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  99,
+                  111,
+                  114,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "submission"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "system_score",
+          "type": "u8"
+        },
+        {
+          "name": "judge_score",
+          "type": "u8"
+        },
+        {
+          "name": "ipfs_cid",
+          "type": "string"
+        }
       ]
     }
   ],
   "accounts": [
     {
+      "name": "Certificate",
+      "discriminator": [
+        202,
+        229,
+        222,
+        220,
+        116,
+        20,
+        74,
+        67
+      ]
+    },
+    {
+      "name": "Hackathon",
+      "discriminator": [
+        180,
+        85,
+        208,
+        43,
+        178,
+        243,
+        204,
+        107
+      ]
+    },
+    {
       "name": "ScoreHash",
-      "discriminator": [0,0,0,0,0,0,0,4],
+      "discriminator": [
+        130,
+        77,
+        164,
+        209,
+        103,
+        63,
+        249,
+        239
+      ]
+    },
+    {
+      "name": "Submission",
+      "discriminator": [
+        58,
+        194,
+        159,
+        158,
+        75,
+        102,
+        178,
+        197
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidScore",
+      "msg": "Score must be between 0 and 100"
+    },
+    {
+      "code": 6001,
+      "name": "ScoreTooLow",
+      "msg": "Score is too low to receive a certificate"
+    },
+    {
+      "code": 6002,
+      "name": "HackathonInactive",
+      "msg": "The hackathon is no longer active"
+    },
+    {
+      "code": 6003,
+      "name": "HackathonNotFinalized",
+      "msg": "The hackathon results must be finalized before issuing certificates"
+    },
+    {
+      "code": 6004,
+      "name": "Unauthorized",
+      "msg": "Only the hackathon organizer can perform this action"
+    }
+  ],
+  "types": [
+    {
+      "name": "Certificate",
       "type": {
         "kind": "struct",
         "fields": [
-          { "name": "submissionId", "type": "publicKey" },
-          { "name": "systemScore", "type": "u8" },
-          { "name": "judgeScore", "type": "u8" },
-          { "name": "finalScore", "type": "u8" },
-          { "name": "ipfsCid", "type": "string" }
+          {
+            "name": "submission_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "metadata_uri",
+            "type": "string"
+          },
+          {
+            "name": "minted_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Hackathon",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "organizer",
+            "type": "pubkey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ScoreHash",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "submission_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "system_score",
+            "type": "u8"
+          },
+          {
+            "name": "judge_score",
+            "type": "u8"
+          },
+          {
+            "name": "final_score",
+            "type": "u8"
+          },
+          {
+            "name": "ipfs_cid",
+            "type": "string"
+          }
         ]
       }
     },
     {
       "name": "Submission",
-      "discriminator": [0,0,0,0,0,0,0,5],
       "type": {
         "kind": "struct",
         "fields": [
-          { "name": "hackathonId", "type": "publicKey" },
-          { "name": "participantWallet", "type": "publicKey" },
-          { "name": "problemId", "type": "string" },
-          { "name": "repoUrl", "type": "string" },
-          { "name": "deploymentUrl", "type": "string" }
+          {
+            "name": "hackathon_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "participant_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "problem_id",
+            "type": "string"
+          },
+          {
+            "name": "repo_url",
+            "type": "string"
+          },
+          {
+            "name": "deployment_url",
+            "type": "string"
+          }
         ]
       }
     }
-  ],
-  "errors": [
-    { "code": 6000, "name": "InvalidScore", "msg": "Score must be between 0 and 100" }
   ]
 }

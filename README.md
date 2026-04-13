@@ -44,7 +44,7 @@ sequenceDiagram
     participant Chain as Solana (Anchor)
     participant Dash as Dashboard (Next.js)
     
-    User->>CLI: run `judgechain submit ./project`
+    User->>CLI: run `judgenod submit ./project`
     activate CLI
     CLI->>CLI: Package code & metadata
     CLI->>Backend: HTTP POST /api/v1/score
@@ -132,7 +132,7 @@ inmodel-c/
 ✅ **Backend Scoring Engine (FastAPI)**
 - Static code analysis via modular analyzers (code quality, test coverage, documentation, deployment health, custom criteria)
 - GitHub repository utilities (`github_utils.py`)
-- LLM-powered code review integration
+- LLM-assisted code review via static analysis of repo structure and key source files (no code execution, no RCE risk)
 - Cryptographic signature verification (`auth.py`)
 - SQLite database for submission storage (`db_store.py`)
 - Solana program integration (`solana_client.py`)
@@ -226,16 +226,16 @@ npm run dev
 ```bash
 cd cli
 npm install
-npm link  # Makes 'judgechain' command available globally
+npm link  # Makes 'judgenod' command available globally
 
 # Submit a project
-judgechain submit
+judgenod submit
 
 # View leaderboard
-judgechain leaderboard
+judgenod leaderboard
 
 # Mint certificate
-judgechain certificate
+judgenod certificate
 ```
 
 ### API Endpoints
@@ -244,7 +244,7 @@ judgechain certificate
 |--------|------|-------------|
 | `POST` | `/api/v1/score` | Submit and score a project |
 | `POST` | `/api/v1/judge` | Manual judge scoring |
-| `GET`  | `/api/v1/certificate` | Generate certificate metadata |
+| `POST` | `/api/v1/certificate/{submission_id}` | Mint NFT certificate |
 | `GET`  | `/` | Health check |
 
 ---
@@ -260,3 +260,9 @@ judgechain certificate
 **Soulbound NFT Certificates**: Certificates are issued as Metaplex Core NFTs with a permanent freeze delegate, making them non-transferable and tamper-proof proof of achievement.
 
 **70/30 Scoring Split**: Final scores are computed as 70% automated system score + 30% judge score, recorded immutably on-chain.
+
+---
+
+## Live on Devnet
+
+- Program: https://solscan.io/account/9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2?cluster=devnet

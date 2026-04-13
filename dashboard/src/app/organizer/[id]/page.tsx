@@ -4,18 +4,13 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { Program, AnchorProvider } from "@coral-xyz/anchor";
+import { Program, AnchorProvider, Wallet } from "@coral-xyz/anchor";
 import { toast } from "sonner";
 import { StatCard } from "../../../components/ui/StatCard";
 import { Button } from "../../../components/ui/Button";
 import IDL_JSON from "../../../idl/judgechain.json";
 import { Judgechain } from "../../../idl/judgechain";
 
-interface StrategicWallet {
-  publicKey: PublicKey;
-  signTransaction: (tx: unknown) => Promise<unknown>;
-  signAllTransactions: (txs: unknown[]) => Promise<unknown[]>;
-}
 
 interface HackathonData {
   name: string;
@@ -38,7 +33,7 @@ export default function HackathonManagement() {
 
     const fetchHackathon = async () => {
       try {
-        const provider = new AnchorProvider(connection, (window as unknown as { solana: StrategicWallet }).solana, {});
+        const provider = new AnchorProvider(connection, (window as unknown as { solana: Wallet }).solana, {});
         const program = new Program<Judgechain>(IDL_JSON as unknown as Judgechain, provider);
         const data = await program.account.hackathon.fetch(new PublicKey(id as string));
         setHackathon({
@@ -67,7 +62,7 @@ export default function HackathonManagement() {
     const toastId = toast.loading("Finalizing hackathon on-chain...");
 
     try {
-      const provider = new AnchorProvider(connection, (window as unknown as { solana: StrategicWallet }).solana, {});
+      const provider = new AnchorProvider(connection, (window as unknown as { solana: Wallet }).solana, {});
       const program = new Program<Judgechain>(IDL_JSON as unknown as Judgechain, provider);
 
       // Program ID is already in the IDL or we can use the default

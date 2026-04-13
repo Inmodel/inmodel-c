@@ -38,7 +38,7 @@ async def submit_and_score(
         wallet=submission.participant_wallet,
         system_score=sys_score,
     )
-    db_store.save(db, resp.dict(), submission.repo_url, submission.deployment_url)
+    db_store.save(db, resp.model_dump(), submission.repo_url, submission.deployment_url)
 
     background_tasks.add_task(
         record_score_on_chain,
