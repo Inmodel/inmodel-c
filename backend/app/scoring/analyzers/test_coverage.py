@@ -19,12 +19,14 @@ async def score_test_coverage(owner: str, repo: str, reported_coverage: float) -
     )
     
     if not has_test_dir and not has_test_config:
-        # Heavily penalize if no tests found
-        return 2 if reported_coverage > 0 else 0
+        # Heavily penalize if no tests are even detected in the repo
+        # Cap the max possible score from "reported" coverage to 2 if no evidence exists
+        coverage_points = min(int((reported_coverage / 100.0) * 12), 2)
+        return coverage_points
         
     # Calculate score based on reported coverage (range 0-100%, max points 14)
-    # Give a small bonus (2 pts) for having test structure even if coverage is low
-    base_points = 2 if (has_test_dir or has_test_config) else 0
+    # Give a small bonus (2 pts) for having test structure
+    base_points = 2
     coverage_points = int((reported_coverage / 100.0) * 12)
     
     score = base_points + coverage_points
