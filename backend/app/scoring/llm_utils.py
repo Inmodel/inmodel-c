@@ -1,6 +1,9 @@
 import os
 import json
+import logging
 from google import genai
+
+logger = logging.getLogger(__name__)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 _client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
@@ -8,6 +11,7 @@ _client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 async def analyze_code_with_llm(files_content: dict) -> int:
     if not _client:
+        logger.warning("[LLM] GEMINI_API_KEY missing. Using length-based heuristic fallback.")
         total_len = sum(len(c) for c in files_content.values())
         if total_len > 5000: return 8
         if total_len > 1000: return 5
@@ -28,5 +32,5 @@ async def analyze_code_with_llm(files_content: dict) -> int:
             text = text.split("```json")[1].split("```")[0]
         return int(json.loads(text).get("score", 0))
     except Exception as e:
-        print(f"LLM Error: {e}")
+        logger.error(f"[LLM] Error during generation: {e}. Falling back to default score (4).")
         return 4
