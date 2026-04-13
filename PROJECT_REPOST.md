@@ -27,7 +27,7 @@ Hackathon judging is broken. Scores are subjective, opaque, and stored in spread
 
 ### Submission Flow
 
-1. Participant runs `judgechain submit` from their project directory
+1. Participant runs `judgenod submit` from their project directory
 2. CLI collects repo URL, deployment URL, problem ID — persists to `.judgenod.json` for re-use
 3. CLI signs the payload with the participant's Solana keypair (`nacl` + `tweetnacl`)
 4. Signed payload is `POST`ed to `/api/v1/score` with an `x-signature` header
@@ -237,5 +237,3 @@ Most hackathon platforms are just form submissions + a Google Sheet. JudgeChain 
 ## Live on Devnet
 
 - Program: https://solscan.io/account/9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2?cluster=devnet
-- Example score tx: [TODO — add after devnet airdrop]
-- Example certificate mint: [TODO — add after devnet airdrop]

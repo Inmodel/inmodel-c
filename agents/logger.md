@@ -37,3 +37,6 @@ You can synchronize recent git commits with the work log by running:
 - Never post sensitive information (keys, secrets) to the GitHub log.
 - Use `gh issue comment [ISSUE_ID] --body "[LOG_CONTENT]"` to post to GitHub.
 - If the `AGENT_LOG_ISSUE_ID` is not set, prompt the Orchestrator to run `scripts/initialize_logging.sh`.
+
+## Current Project Phase: Deployment & Maintenance
+The MVP build phase is complete. Ensure log synchronizations clearly demarcate that changes are now bug fixes, documentation alignments, or routine demonstrations, rather than feature architecture.

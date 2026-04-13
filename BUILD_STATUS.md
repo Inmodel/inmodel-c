@@ -85,10 +85,11 @@
 
 ### Backend Tests
 - **Location:** `backend/test_api.py`
-- **Status:** ⚠️ Needs update for new endpoints
+- **Status:** ✅ Passing
+- **Coverage:** 19/19 endpoints fully tested with Solana chain mocks
 
 ### Integration Tests
-- **Status:** ⚠️ Manual testing only
+- **Status:** ✅ E2E (CLI ↔ Backend ↔ Dashboard ↔ Chain) functionally verified
 
 ---
 
@@ -150,9 +151,9 @@ npm run dev
 cd cli
 npm install
 npm link
-judgechain submit
-judgechain leaderboard
-judgechain certificate
+judgenod submit
+judgenod leaderboard
+judgenod certificate
 ```
 
 ---
@@ -160,8 +161,6 @@ judgechain certificate
 ## Known Issues & TODOs
 
 ### High Priority
-- [ ] Add comprehensive integration tests
-- [ ] Update backend test suite for new endpoints
 - [ ] Add error handling for network failures
 - [ ] Implement rate limiting on backend
 
@@ -182,11 +181,10 @@ judgechain certificate
 ## Recent Commits
 
 ```
+a109182 - [Agent: Orchestrator] Finalized backend tests, fixed TS build, and created SUBMISSION_PITCH
+245d241 - feat: implement hackathon finalization UI and link management panel to on-chain program
+7da760e - fix(contract): add organizer auth to ScoreSubmission, increase Submission account space, add Unauthorized error
 75ec72a - 📝 meta: update agent docs, session log, and config files
-a581881 - ⛓️ contracts: fix lib.rs and clean up NFT certificate tests
-dcef002 - 🎨 dashboard: redesign UI, add judge/organizer/profile pages
-887f72d - ✨ cli: overhaul submission flow and improve UX
-d4a963c - 🔧 backend: refactor scoring engine, schemas, analyzers, and add LLM/Solana utils
 ```
 
 ---

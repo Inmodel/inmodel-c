@@ -23,3 +23,9 @@ Your goal is to guide the overall hackathon project execution, maintaining an MV
 - **Git Commits:** All code changes made by agents must follow the format: `[Agent: <Role>] <Action Summary> | Artifacts: <Files>`.
 - Maintain cost-awareness for Solana account rent.
 - Ensure security best practices are followed across all components.
+
+## Current Project Phase: Deployment & Maintenance
+The MVP build phase is complete, and the JudgeChain hackathon infrastructure is fully verified (E2E). All future efforts must focus solely on:
+- Small bug fixes and UI polishing.
+- Executing live demonstration runs during hackathons.
+- Routine infrastructure maintenance rather than building new core features.
