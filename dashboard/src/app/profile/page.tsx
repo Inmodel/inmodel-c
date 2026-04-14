@@ -3,17 +3,14 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { web3 } from "@coral-xyz/anchor";
-
-import { useProgram, getCertificatePda, getHackathonPda } from "../../lib/useProgram";
 import { BentoCard } from "../../components/ui/BentoCard";
+
 import { toast } from "sonner";
 
-// For MVP, we use the same hardcoded hackathon
-const ORGANIZER_PUBKEY = new web3.PublicKey("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
-const CORE_PROGRAM_ID = new web3.PublicKey("CoREMoSNo1XUanH6K2D9hM74G3T4qLw1T8S9L6V5S9S"); // Actual Metaplex Core ID
-
 type UserSubmission = {
+
   pubkey: web3.PublicKey;
+  submissionId: string;
   account: {
     problemId: string;
     repoUrl: string;
@@ -39,10 +36,10 @@ type ApiSubmission = {
 
 export default function ProfilePage() {
   const { publicKey } = useWallet();
-  const program = useProgram();
   const [submissions, setSubmissions] = useState<UserSubmission[]>([]);
   const [problems, setProblems] = useState<Record<string, { title: string }>>({});
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     fetch("http://localhost:8000/api/v1/problems")
@@ -83,46 +80,45 @@ export default function ProfilePage() {
     fetchUserData();
   }, [publicKey, fetchUserData]);
 
-  async function claimCertificate(sub: UserSubmission) {
-    if (!publicKey || !program) return;
+  async function claimCertificate(sub: UserSubmission & { submissionId: string }) {
+    if (!publicKey) return;
     
-    const toastId = toast.loading("Minting your On-Chain Certificate...");
+    const toastId = toast.loading("Requesting On-Chain Certificate...");
     try {
-      const [certPda] = getCertificatePda(sub.pubkey);
-      const [hackathonPda] = getHackathonPda(ORGANIZER_PUBKEY);
-      const assetKeypair = web3.Keypair.generate();
+      // 1. Sign the submission_id to prove ownership
+      // For the certificate route, the backend expects the signature of the submission_id
+      const message = new TextEncoder().encode(sub.submissionId);
       
-      // Note: In a real app, 'collection' would be fetched from the Hackathon account
-      // For this MVP, we assume a collection might be passed or hardcoded
-      const collectionMint = web3.Keypair.generate().publicKey; // Placeholder
+      // We need to handle wallet signature. Assuming standard wallet adapter.
+      // Since we don't have a direct signMessage helper in this snippet, 
+      // we'll use the one from useWallet although we already have publicKey.
+      // But wait, the user is already connected.
+      
+      let signatureBase64 = "";
+      if (window.solana && window.solana.signMessage) {
+         const sig = await window.solana.signMessage(message, "utf8");
+         signatureBase64 = sig.signature ? Buffer.from(sig.signature).toString("base64") : Buffer.from(sig).toString("base64");
+      } else {
+         // Fallback/standard way if signMessage is available on the adapter
+         // This depends on the specific adapter version, but for MVP/Pilot:
+         throw new Error("Wallet does not support message signing. Please use a compatible Solana wallet.");
+      }
 
-      const [scorePda] = web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("score"), sub.pubkey.toBuffer()],
-        program.programId
+      // 2. Call backend minting endpoint
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/certificate/${sub.submissionId}`,
+        {
+          method: "POST",
+          headers: {
+            "x-signature": signatureBase64,
+          },
+        }
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (program as any).methods
-        .issueCertificate(
-          "https://judgechain.io/metadata/cert.json", 
-          `JudgeChain: ${problems[sub.account.problemId]?.title || "Winner"}`
-        )
-        .accounts({
-          payer: publicKey,
-          participant: publicKey,
-          submission: sub.pubkey,
-          scoreHash: scorePda,
-          certificate: certPda,
-          asset: assetKeypair.publicKey,
-          collection: collectionMint, 
-          hackathon: hackathonPda,
-          coreProgram: CORE_PROGRAM_ID,
-          systemProgram: web3.SystemProgram.programId,
-        })
-        .signers([assetKeypair])
-        .rpc();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Minting failed");
 
-      toast.success("Certificate minted! Check your wallet.", { id: toastId });
+      toast.success("Certificate minted! Transaction: " + data.tx_sig.slice(0, 8) + "...", { id: toastId });
       fetchUserData();
     } catch (err: unknown) {
       console.error(err);
@@ -130,6 +126,7 @@ export default function ProfilePage() {
       toast.error(errorMessage || "Minting failed", { id: toastId });
     }
   }
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
