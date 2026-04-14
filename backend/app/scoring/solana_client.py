@@ -7,6 +7,7 @@ from solana.rpc.async_api import AsyncClient
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from anchorpy import Provider, Wallet, Program, Idl
+from app.utils.retry import with_retry
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,7 @@ def get_pdas(organizer: Pubkey, participant: Pubkey):
     return hackathon_pda, submission_pda, score_pda, cert_pda
 
 
+@with_retry(max_attempts=3, backoff_base=2.0)
 async def record_score_on_chain(
     submission_id: str, 
     participant_wallet: str,
@@ -104,6 +106,7 @@ async def record_score_on_chain(
         return None
 
 
+@with_retry(max_attempts=3, backoff_base=2.0)
 async def issue_certificate_on_chain(
     submission_id: str, 
     participant_wallet: str,
