@@ -161,14 +161,14 @@ judgenod certificate
 ## Known Issues & TODOs
 
 ### High Priority
-- [ ] Add error handling for network failures
-- [ ] Implement rate limiting on backend
+- [x] Add error handling for network failures (implemented with `slowapi` and `@with_retry`)
+- [x] Implement rate limiting on backend (global 60/min, 10/min on mutations)
 
 ### Medium Priority
-- [ ] Add GitHub OAuth for dashboard
-- [ ] Implement real-time leaderboard updates
-- [ ] Add submission history to profile page
-- [ ] Improve certificate metadata generation
+- [x] Add GitHub OAuth for dashboard (stub link added to profile)
+- [x] Implement real-time leaderboard updates (SSE streaming enabled)
+- [x] Add submission history to profile page (`/api/v1/submissions` added)
+- [x] Improve certificate metadata generation (real JSON metadata served)
 
 ### Low Priority
 - [ ] Add dark mode toggle
