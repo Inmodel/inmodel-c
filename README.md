@@ -20,13 +20,16 @@ graph TD
     classDef python fill:#3776AB,stroke:#fff,stroke-width:2px,color:#fff;
     classDef solana fill:#14F195,stroke:#9945FF,stroke-width:3px,color:#000;
     classDef nextjs fill:#000000,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef events fill:#f59e0b,stroke:#fff,stroke-width:2px,color:#fff;
 
     A([Participant Developer]):::user -->|Submits Code| B(CLI Tool<br/>Node.js):::nodejs
     B -->|Encrypted Payload| C{Backend Engine<br/>FastAPI / Python}:::python
     C -->|Static Analysis| D[Scoring Modules]:::python
     D -.->|Score Result| C
     C -->|Records Tx| E[(Solana Blockchain<br/>Anchor Program)]:::solana
-    F(Web Dashboard<br/>Next.js):::nextjs -->|Verify On-chain| E
+    C -->|Broadcast Update| H[SSE Event Bus]:::events
+    H -->|Real-time Stream| F(Web Dashboard<br/>Next.js):::nextjs
+    F -->|Verify On-chain| E
     G([Hackathon Organizer]):::user -->|Views Leaderboard| F
 ```
 
@@ -41,6 +44,7 @@ sequenceDiagram
     participant User as Participant
     participant CLI as CLI Tool (Node.js)
     participant Backend as Scoring Engine (Python)
+    participant Bus as SSE Event Bus
     participant Chain as Solana (Anchor)
     participant Dash as Dashboard (Next.js)
     
@@ -51,23 +55,22 @@ sequenceDiagram
     activate Backend
     
     Backend->>Backend: Validate payload (Pydantic)
-    Backend->>Backend: Run static analysis & LLM review
-    Backend->>Backend: Calculate technical score (70/30 weighting)
+    Backend->>Backend: Run static analysis & LLM review (Retriable)
+    Backend->>Backend: Calculate technical score
     
-    Backend->>Chain: Tx: Record Score Data
-    activate Chain
-    Chain-->>Backend: Returns Transaction Hash
-    deactivate Chain
+    par Async Tasks
+        Backend->>Chain: Tx: Record Score Data (Retriable)
+        Backend->>Bus: Broadcast `score_update`
+    end
+    
+    Bus-->>Dash: Push Real-time Update (SSE)
+    Dash->>Chain: Read verified leaderboard
     
     Backend-->>CLI: Success + Tx Hash
     deactivate Backend
     CLI-->>User: Deployment successful
 
-    Dash->>Chain: Read leaderboard accounts
-    activate Dash
-    Chain-->>Dash: Score Data
-    Dash-->>User: Display verifiable score
-    deactivate Dash
+    Dash-->>User: Display verifiable score (Real-time)
 ```
 
 ---
@@ -79,39 +82,25 @@ inmodel-c/
 ├── backend/            # Python backend scoring engine (FastAPI, Pydantic)
 │   ├── app/
 │   │   ├── api/
-│   │   │   └── routes/     # API routes (score, judge, certificate)
-│   │   ├── models/         # Pydantic schemas & DB models
-│   │   ├── scoring/        # Static analysis, LLM & Solana utils
-│   │   │   └── analyzers/  # code_quality, test_coverage, documentation, deployment_health, custom_criteria
+│   │   │   └── routes/     # score, judge, certificate, metadata, submissions, events, oauth
+│   │   ├── scoring/        # analyzers/ (code_quality, test_coverage, docs, health, etc.)
+│   │   ├── utils/          # retry.py (exponential backoff)
+│   │   ├── events.py       # In-memory pub/sub event bus
+│   │   ├── limiter.py      # Shared rate limiting configuration
 │   │   ├── auth.py         # Cryptographic signature verification
-│   │   ├── database.py     # SQLite setup
-│   │   ├── db_store.py     # Submission persistence
-│   │   └── problems.py     # Problem definitions
-│   ├── idl/            # Anchor IDL for Solana program
+│   │   └── db_store.py     # Submission persistence
 │   ├── main.py         # FastAPI app entry point
-│   ├── judgechain.db   # SQLite database
-│   └── judgechain.json # IDL for Solana program (legacy)
+│   └── requirements.txt # slowapi, sse-starlette added
 ├── cli/                # Node.js CLI submission tool for participants
 │   ├── src/
-│   │   └── index.ts    # CLI commands (submit, leaderboard, certificate)
-│   └── package.json
+│   │   └── index.ts    # index.ts upgraded with retryFetch()
 ├── dashboard/          # Next.js / TypeScript Web dashboard
 │   ├── src/
-│   │   ├── app/        # Pages (home, submit, leaderboard, judge, organizer, organizer/[id], organizer/new, profile)
-│   │   ├── components/ # React components (Navbar, Sidebar, WalletButton, SolscanLink, ui/)
-│   │   ├── lib/        # Solana connection, API client & useProgram hook
-│   │   ├── idl/        # IDL types for TypeScript
-│   │   └── types/      # TypeScript definitions
-│   └── package.json
+│   │   ├── app/        # /leaderboard (SSE enabled), /profile (History enabled)
+│   │   ├── components/ # BentoCard, Sidebar (OAuth), SolscanLink
+│   │   └── lib/        # useProgram hook, API client
 ├── programs/           # Solana smart contracts (Rust & Anchor)
-│   └── judgechain/
-│       └── src/
-│           └── lib.rs  # Main program (hackathon, submission, scoring, NFT certificates)
 ├── tests/              # Anchor protocol and integration tests
-│   ├── judgechain.ts
-│   └── nft_certificates.ts
-├── agents/             # AI agent instructions (orchestrator, blockchain, backend, frontend, cli, logger)
-├── scripts/            # Utility scripts (git sync, logging initialization)
 └── .agent/             # AI Developer Context files
 ```
 
@@ -119,44 +108,27 @@ inmodel-c/
 
 ## Features Implemented
 
-✅ **Smart Contract (Solana/Anchor)**
-- Hackathon creation and management (`create_hackathon`)
-- NFT collection creation (`create_collection`)
-- Submission tracking with on-chain records (`create_submission`)
-- Dual scoring system — 70% system / 30% judge (`score_submission`)
-- Hackathon finalization (`finalize_hackathon`)
-- NFT certificate issuance via Metaplex Core (`issue_certificate`)
-- Soulbound certificates with permanent freeze delegate
-- PDA-based account management
+✅ **Hardening & Performance (Phase 2)**
+- [x] **Network Robustness**: Generic `@with_retry` decorator with exponential backoff for all operations.
+- [x] **Rate Limiting**: Integrated `slowapi` to protect mutation endpoints (10/min) and global routes.
+- [x] **Real-time Updates (SSE)**: Event-driven leaderboard updates via Server-Sent Events.
+- [x] **Fault Tolerance**: Scoring pipeline wrapped in safe execution blocks.
+- [x] **CLI Robustness**: Implemented `retryFetch()` in CLI to handle network drops.
 
 ✅ **Backend Scoring Engine (FastAPI)**
-- Static code analysis via modular analyzers (code quality, test coverage, documentation, deployment health, custom criteria)
-- GitHub repository utilities (`github_utils.py`)
-- LLM-assisted code review via static analysis of repo structure and key source files (no code execution, no RCE risk)
-- Cryptographic signature verification (`auth.py`)
-- SQLite database for submission storage (`db_store.py`)
-- Solana program integration (`solana_client.py`)
-- Certificate metadata generation endpoint
-- CORS middleware for frontend
-
-✅ **CLI Tool (Node.js)**
-- Interactive submission flow with @clack/prompts
-- Project persistence (`.judgenod.json`)
-- Smart git detection
-- Cryptographic signing with Solana keypair
-- Leaderboard viewing
-- Certificate command for NFT minting
-- Network selection (devnet / mainnet / localnet)
+- [x] Static code analysis via modular analyzers.
+- [x] LLM-assisted code review (GitHub API based, no RCE).
+- [x] Dynamic certificate metadata generation (`/api/v1/metadata/{id}.json`).
+- [x] Submission history tracking by wallet.
+- [x] GitHub OAuth linkage stub.
+- [x] Cryptographic signature verification.
 
 ✅ **Web Dashboard (Next.js)**
-- Home page with feature showcase
-- Submit page for project submission
-- Leaderboard with real-time rankings
-- Judge panel for manual scoring
-- Organizer dashboard with hackathon management (`/organizer`, `/organizer/new`, `/organizer/[id]`)
-- Profile page for participant stats
-- Wallet connection (Solana wallet adapter)
-- Solscan transaction links
+- [x] SSE-powered real-time updates for rankings.
+- [x] Submission history and certificate claiming panels.
+- [x] GitHub identity linking flow.
+- [x] Wallet connection and Solscan deep-linking.
+
 
 ---
 
@@ -182,6 +154,10 @@ DATABASE_URL=sqlite:///./judgechain.db
 ANCHOR_PROVIDER_URL=https://api.devnet.solana.com
 ANCHOR_WALLET=~/.config/solana/id.json
 PROGRAM_ID=9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2
+API_BASE_URL=http://localhost:8000
+DASHBOARD_URL=http://localhost:3000
+GITHUB_CLIENT_ID=your_client_id
+GITHUB_CLIENT_SECRET=your_client_secret
 ```
 
 **Dashboard (`dashboard/.env.local`)**
@@ -242,9 +218,13 @@ judgenod certificate
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/v1/score` | Submit and score a project |
-| `POST` | `/api/v1/judge` | Manual judge scoring |
-| `POST` | `/api/v1/certificate/{submission_id}` | Mint NFT certificate |
+| `POST` | `/api/v1/score` | Submit and score a project (Rate Limited) |
+| `POST` | `/api/v1/judge/score` | Manual judge scoring (Rate Limited) |
+| `POST` | `/api/v1/certificate/{id}` | Mint NFT certificate (Rate Limited) |
+| `GET`  | `/api/v1/metadata/{id}.json` | Serves dynamic NFT metadata |
+| `GET`  | `/api/v1/submissions?wallet=...` | Fetch wallet submission history |
+| `GET`  | `/api/v1/events/leaderboard` | SSE stream for real-time updates |
+| `GET`  | `/api/v1/auth/github` | GitHub OAuth entry point |
 | `GET`  | `/` | Health check |
 
 ---

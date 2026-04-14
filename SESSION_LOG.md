@@ -704,3 +704,271 @@
 **Status:** SUCCESS
 **Summary:** [Agent: Orchestrator] Synchronize documentation post-E2E phase: update BUILD_STATUS, AGENT context, and reflect maintenance deployment state | Artifacts: BUILD_STATUS.md, PROJECT_REPOST.md, AGENT.md, agents/orchestrator.md, agents/logger.md
 
+
+2026-04-15T00:10:00Z | [Agent: Logger Expert] Phase 2: Hardening & Feature Completion Finished. Implemented retries, rate limiting, SSE, and submission history. Synchronizing project documentation.
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 9fa0cbf
+**Timestamp:** 2026-04-13 23:41:51 +0530
+**Status:** SUCCESS
+**Summary:** fix(auth): support bytes message in verify_solana_signature and add require_solana_signature helper
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** ce7b3e1
+**Timestamp:** 2026-04-13 23:41:56 +0530
+**Status:** SUCCESS
+**Summary:** fix(score): use require_solana_signature and pass participant_wallet to record_score_on_chain
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 03bee08
+**Timestamp:** 2026-04-13 23:42:00 +0530
+**Status:** SUCCESS
+**Summary:** fix(judge): add AUTHORIZED_JUDGES guard, replicate on-chain integer 70/30 math, pass wallet to record_score_on_chain
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 2ccff7d
+**Timestamp:** 2026-04-13 23:42:05 +0530
+**Status:** SUCCESS
+**Summary:** fix(certificate): simplify auth to require_solana_signature on submission_id and pass wallet to issue_certificate_on_chain
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** f208d5b
+**Timestamp:** 2026-04-13 23:42:09 +0530
+**Status:** SUCCESS
+**Summary:** refactor(db_store): rename _to_dict and _status to public to_dict and status
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 07e8df9
+**Timestamp:** 2026-04-13 23:42:13 +0530
+**Status:** SUCCESS
+**Summary:** perf(deployment_health): reuse singleton AsyncClient instead of creating per-request
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 0997fac
+**Timestamp:** 2026-04-13 23:42:17 +0530
+**Status:** SUCCESS
+**Summary:** fix(test_coverage): cap score proportionally when no test structure detected instead of hard 0/2
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 7e02dcf
+**Timestamp:** 2026-04-13 23:42:20 +0530
+**Status:** SUCCESS
+**Summary:** fix(llm_utils): replace print with structured logger and add warning on missing API key
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** a15f8af
+**Timestamp:** 2026-04-13 23:42:26 +0530
+**Status:** SUCCESS
+**Summary:** refactor(solana_client): cache Program instance, derive PDAs from participant wallet, accept wallet param in record/issue functions
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** c9fcf15
+**Timestamp:** 2026-04-13 23:42:30 +0530
+**Status:** SUCCESS
+**Summary:** chore(idl): update Anchor IDL to reflect hackathon id field and new PDA seeds
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 93c1523
+**Timestamp:** 2026-04-13 23:42:35 +0530
+**Status:** SUCCESS
+**Summary:** feat(program): add hackathon id to PDA seeds, add string length guards, align 70/30 integer math with backend
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** dc56e6d
+**Timestamp:** 2026-04-13 23:42:40 +0530
+**Status:** SUCCESS
+**Summary:** fix(cli): sign submission_id and attach x-signature header for certificate mint request
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 1d607a4
+**Timestamp:** 2026-04-13 23:42:44 +0530
+**Status:** SUCCESS
+**Summary:** test(judgechain): update PDA derivation and createHackathon call to include HACKATHON_ID seed
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 44a087f
+**Timestamp:** 2026-04-13 23:42:47 +0530
+**Status:** SUCCESS
+**Summary:** chore: update session log and agent state
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** a366b0a
+**Timestamp:** 2026-04-14 23:21:15 +0530
+**Status:** SUCCESS
+**Summary:** feat(utils): add async retry decorator with exponential backoff
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 49380bd
+**Timestamp:** 2026-04-14 23:21:23 +0530
+**Status:** SUCCESS
+**Summary:** feat(backend): add shared slowapi rate limiter instance
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 616ad2b
+**Timestamp:** 2026-04-14 23:21:31 +0530
+**Status:** SUCCESS
+**Summary:** feat(backend): add in-process SSE pub/sub broadcast module
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 21010fb
+**Timestamp:** 2026-04-14 23:21:34 +0530
+**Status:** SUCCESS
+**Summary:** chore(deps): add slowapi and sse-starlette dependencies
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 4be329e
+**Timestamp:** 2026-04-14 23:21:37 +0530
+**Status:** SUCCESS
+**Summary:** refactor(deployment_health): extract HTTP check into retried helper, add structured logging
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 7f1a8ad
+**Timestamp:** 2026-04-14 23:21:56 +0530
+**Status:** SUCCESS
+**Summary:** perf(engine): run analyzers concurrently with asyncio.gather, isolate failures with _safe_run
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 3a344dd
+**Timestamp:** 2026-04-14 23:22:00 +0530
+**Status:** SUCCESS
+**Summary:** feat(github_utils): apply @with_retry to fetch_github_api for transient network failures
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 8db052b
+**Timestamp:** 2026-04-14 23:22:05 +0530
+**Status:** SUCCESS
+**Summary:** feat(solana_client): apply @with_retry to record_score and issue_certificate on-chain calls
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** a00fba4
+**Timestamp:** 2026-04-14 23:22:08 +0530
+**Status:** SUCCESS
+**Summary:** feat(db_store): expose repo_url and deployment_url in to_dict serializer
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** ce7ae56
+**Timestamp:** 2026-04-14 23:22:11 +0530
+**Status:** SUCCESS
+**Summary:** feat(routes/score): add 10/min rate limit and SSE broadcast on successful submission
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 4d59810
+**Timestamp:** 2026-04-14 23:22:14 +0530
+**Status:** SUCCESS
+**Summary:** feat(routes/judge): add 10/min rate limit and SSE broadcast on judge score update
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** e568964
+**Timestamp:** 2026-04-14 23:22:18 +0530
+**Status:** SUCCESS
+**Summary:** feat(routes/certificate): add 10/min rate limit and dynamic metadata URI from API_BASE_URL
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 15d7de2
+**Timestamp:** 2026-04-14 23:22:26 +0530
+**Status:** SUCCESS
+**Summary:** feat(routes/events): add SSE endpoint for real-time leaderboard updates with keepalive
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 5f0d5b1
+**Timestamp:** 2026-04-14 23:22:33 +0530
+**Status:** SUCCESS
+**Summary:** feat(routes/submissions): add GET /submissions endpoint to fetch history by wallet
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** f47592a
+**Timestamp:** 2026-04-14 23:22:39 +0530
+**Status:** SUCCESS
+**Summary:** feat(routes/metadata): serve Metaplex-compatible NFT certificate JSON metadata
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 71f2c64
+**Timestamp:** 2026-04-14 23:22:51 +0530
+**Status:** SUCCESS
+**Summary:** feat(routes/github_auth): add GitHub OAuth login and callback endpoints
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** e5311ac
+**Timestamp:** 2026-04-14 23:22:56 +0530
+**Status:** SUCCESS
+**Summary:** feat(main): wire rate limiter, SSE, submissions, metadata, and github_auth routers
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 9640205
+**Timestamp:** 2026-04-14 23:23:01 +0530
+**Status:** SUCCESS
+**Summary:** test(api): fix judge auth by using shared TEST_JUDGE_KP and signing list_submissions message
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** 95d4ef0
+**Timestamp:** 2026-04-14 23:23:05 +0530
+**Status:** SUCCESS
+**Summary:** feat(cli): add retryRequest helper with exponential backoff for network failures
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** bca8abf
+**Timestamp:** 2026-04-14 23:23:11 +0530
+**Status:** SUCCESS
+**Summary:** feat(leaderboard): add SSE connection for real-time updates with polling fallback
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** d5af08b
+**Timestamp:** 2026-04-14 23:23:19 +0530
+**Status:** SUCCESS
+**Summary:** feat(sidebar): add Link GitHub button for OAuth profile linking
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** e86f471
+**Timestamp:** 2026-04-14 23:23:23 +0530
+**Status:** SUCCESS
+**Summary:** chore(env): add GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET to .env.example
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** f038cf2
+**Timestamp:** 2026-04-14 23:23:29 +0530
+**Status:** SUCCESS
+**Summary:** chore(docs): mark rate limiting, SSE, GitHub OAuth, and metadata items as completed
+
+
+### [Agent: Manual Commit] - Git Sync
+**Commit:** cb482cf
+**Timestamp:** 2026-04-14 23:27:17 +0530
+**Status:** SUCCESS
+**Summary:** chore: update session log and agent state to reflect latest orchestrator synchronization
+

@@ -1,6 +1,6 @@
 # JudgeChain Build Status
 
-**Last Updated:** 2026-04-12
+**Last Updated:** 2026-04-15
 
 ## Deployment Status
 
@@ -15,9 +15,11 @@
 - **Port:** 8000
 - **Database:** SQLite (judgechain.db)
 - **Endpoints:**
-  - `POST /api/v1/score` - Submit and score project
-  - `POST /api/v1/judge` - Manual judge scoring
-  - `GET /api/v1/certificate` - Generate certificate metadata
+  - `POST /api/v1/score` - Submit and score project (Hardened)
+  - `POST /api/v1/judge/score` - Manual judge scoring (Hardened)
+  - `POST /api/v1/certificate/{id}` - Mint NFT certificate (Hardened)
+  - `GET /api/v1/submissions` - Participant history (Active)
+  - `GET /api/v1/events/leaderboard` - Real-time SSE (Active)
 
 ### Dashboard
 - **Status:** ✅ Running locally
@@ -46,11 +48,15 @@
 ### ✅ Backend (backend/)
 - [x] FastAPI application structure
 - [x] SQLite database integration
-- [x] Static code analysis (coverage, lint, complexity)
-- [x] LLM-powered code review
+- [x] Static code analysis (Hardened with retries)
+- [x] LLM-powered code review 
+- [x] Rate limiting via `slowapi` (10/min mutation, 60/min global)
+- [x] Real-time event broadcasting (SSE)
 - [x] Cryptographic signature verification
-- [x] Certificate metadata generation
-- [x] Solana program integration (IDL)
+- [x] Dynamic certificate metadata generation
+- [x] Participant history API
+- [x] GitHub OAuth linkage (Stub)
+- [x] Solana program integration (IDL 0.30.1)
 - [x] CORS middleware for frontend
 
 ### ✅ Dashboard (dashboard/)
@@ -160,11 +166,11 @@ judgenod certificate
 
 ## Known Issues & TODOs
 
-### High Priority
+### High Priority (Hardened)
 - [x] Add error handling for network failures (implemented with `slowapi` and `@with_retry`)
 - [x] Implement rate limiting on backend (global 60/min, 10/min on mutations)
 
-### Medium Priority
+### Medium Priority (Implemented)
 - [x] Add GitHub OAuth for dashboard (stub link added to profile)
 - [x] Implement real-time leaderboard updates (SSE streaming enabled)
 - [x] Add submission history to profile page (`/api/v1/submissions` added)

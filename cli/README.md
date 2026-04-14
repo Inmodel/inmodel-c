@@ -12,13 +12,21 @@ node dist/index.js <command>
 npm link
 ```
 
-## Network Configuration
-
-Set `JUDGECHAIN_API_URL` to override the default backend (`http://localhost:8000/api/v1`):
-
 ```bash
 export JUDGECHAIN_API_URL=https://api.judgechain.xyz/api/v1
 ```
+
+---
+
+## 🏗️ Robustness & Reliability (Phase 2)
+
+The CLI now handles intermittent network instability gracefully.
+
+### 🔄 Automatic Retries
+All requests to the JudgeChain backend are wrapped in a `retryFetch` wrapper. This implements:
+- **3 Attempt Limit**: To avoid infinite loops while ensuring a fair chance at delivery.
+- **Exponential Backoff**: (1s → 2s → 4s) to allow short network blips or backend restarts to resolve.
+- **Targeted Failures**: Retries on `ECONNREFUSED`, `ETIMEDOUT`, and non-rate-limited 500 errors.
 
 ---
 
@@ -102,6 +110,8 @@ judgenod certificate --submission-id <id> --network devnet
 ```
 
 Mints a soulbound NFT certificate on-chain for a qualifying submission (final score ≥ 50).
+- **Hardened**: Now calls the backend authority for centralized, Metaplex-compatible minting with dynamic metadata JSON.
+- **Verifiable**: Both the scoring hash and the final reward are linked permanently on the Solana Devnet.
 
 | Flag | Description |
 |---|---|

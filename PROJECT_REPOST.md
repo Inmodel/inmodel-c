@@ -12,14 +12,15 @@ Hackathon judging is broken. Scores are subjective, opaque, and stored in spread
 
 ## What We Built
 
-**JudgeChain** is a full-stack hackathon judging platform that replaces spreadsheets and gut-feel scoring with:
+**JudgeChain** is a hardened, pilot-ready judging platform that replaces spreadsheets with:
 
-- **Automated static analysis** of submitted GitHub repos (no code execution, no RCE risk)
-- **LLM-assisted code review** via GitHub API static analysis (no code execution, no sandboxing required)
-- **On-chain score recording** via a Solana/Anchor smart contract
-- **Soulbound NFT certificates** for winners — non-transferable, permanently frozen, verifiable forever
-- **A CLI** for participants to submit in seconds
-- **A dashboard** for organizers and judges to manage everything visually
+- **Automated static analysis** (Hardened with retry logic and non-blocking background threads)
+- **LLM-assisted code review** via static repository analysis
+- **On-chain score recording** (Solana/Anchor with transaction retries)
+- **Soulbound NFT certificates** (Metaplex Core + Dynamic Metadata JSON)
+- **Real-time verification** via Server-Sent Events (SSE)
+- **A CLI** for participants to submit and mint certificates in seconds
+- **A dashboard** with submission history and a "War Room" aesthetic
 
 ---
 
@@ -111,13 +112,14 @@ Built on **Metaplex Core**. Each certificate is minted with a `PermanentFreezeDe
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/v1/score` | Submit project, run scoring pipeline |
-| `GET` | `/api/v1/score/{id}` | Fetch a submission by ID |
-| `GET` | `/api/v1/leaderboard?problem_id=` | Ranked leaderboard for a problem |
-| `GET` | `/api/v1/judge/submissions` | List all submissions for judges |
-| `POST` | `/api/v1/judge/score` | Submit judge scores (signed) |
+| `POST` | `/api/v1/score` | Submit project, run scoring pipeline (Rate Limited) |
+| `POST` | `/api/v1/judge/score` | Submit judge scores (Rate Limited) |
+| `POST` | `/api/v1/certificate/{id}` | Mint NFT certificate (Rate Limited) |
+| `GET` | `/api/v1/metadata/{id}.json` | Dynamic NFT Metadata service |
+| `GET` | `/api/v1/submissions?wallet=` | Participant history API |
+| `GET` | `/api/v1/events/leaderboard` | Real-time SSE event stream |
+| `GET` | `/api/v1/leaderboard` | Ranked leaderboard |
 | `GET` | `/api/v1/problems` | List available problems |
-| `POST` | `/api/v1/certificate/{submission_id}` | Mint NFT certificate |
 
 All mutating endpoints require an `x-signature` header — a `nacl` signature of the request body using the participant's/judge's Solana keypair.
 
@@ -150,11 +152,13 @@ Supports `--network devnet | mainnet | localnet` and `--keypair <path>`.
 
 ## Security Design
 
-- **No RCE**: The backend never executes submitted code. All analysis is static (GitHub API + LLM).
-- **Signature verification**: Every submission is signed with the submitter's Solana keypair. The backend verifies the `nacl` signature before processing.
+- **No RCE**: The backend never executes submitted code. All analysis is static.
+- **Rate Limiting**: Integrated `slowapi` to prevent DoS/Brute-force on scoring and minting endpoints.
+- **Signature verification**: Every submission is signed with the submitter's Solana keypair. 
+- **Network Resilience**: Automatic retries with exponential backoff for GitHub and Solana RPC calls.
 - **On-chain immutability**: Scores are written to PDAs — they can't be edited after the fact.
-- **Soulbound certificates**: `PermanentFreezeDelegate` with no unfreeze authority. Permanently non-transferable.
-- **Hackathon lifecycle enforcement**: Submissions and scoring are gated by `is_active`. Certificates are gated by `!is_active` (must finalize first).
+- **Soulbound certificates**: `PermanentFreezeDelegate` with no unfreeze authority. 
+- **Hackathon lifecycle enforcement**: Submissions and scoring are gated by `is_active`.
 - **Score threshold**: Certificates require `final_score >= 50` — enforced in the contract.
 
 ---
@@ -226,11 +230,11 @@ NEXT_PUBLIC_RPC_URL=https://api.devnet.solana.com
 
 Most hackathon platforms are just form submissions + a Google Sheet. JudgeChain is:
 
-1. **Verifiable** — every score has a transaction hash. Anyone can verify it on Solscan.
-2. **Tamper-proof** — scores are written to PDAs. No admin can edit them post-submission.
-3. **Automated** — 70% of the score is computed deterministically from the code itself.
-4. **Fair** — the 30% judge component is signed and recorded on-chain too.
-5. **Credentialed** — winners get a soulbound NFT that lives in their wallet forever.
+1. **Verifiable** — every score has a transaction hash on-chain.
+2. **Real-time** — leaderboard updates instantly via Server-Sent Events (SSE).
+3. **Tamper-proof** — scores are written to PDAs; admins cannot edit them.
+4. **Automated** — 70% of the score is computed deterministically from the code.
+5. **Credentialed** — winners get soulbound NFTs with dynamic metadata.
 
 ---
 

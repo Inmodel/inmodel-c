@@ -33,6 +33,8 @@ Hackathon judging is broken. Scores live in spreadsheets, evaluation criteria va
 
 ```
 CLI (Node.js) → Backend (FastAPI) → Solana (Anchor) ← Dashboard (Next.js)
+                      ↓
+                SSE Event Bus → Dashboard (Real-time)
 ```
 
 | Component | Role |
@@ -70,23 +72,25 @@ CLI (Node.js) → Backend (FastAPI) → Solana (Anchor) ← Dashboard (Next.js)
 
 ## Security Highlights
 
-- ✅ **No RCE** — Static analysis only via GitHub API + LLM review. Never executes submitted code.
-- ✅ **Cryptographic auth** — Every CLI submission is signed with the participant's Solana keypair.
+- ✅ **No RCE** — Static analysis only via GitHub API + LLM review. Never executes code.
+- ✅ **Hardened API** — Rate limiting (`slowapi`) prevents DoS on scoring and minting.
+- ✅ **Network Resilience** — Exponential backoff retries for all GitHub and Solana calls.
+- ✅ **Cryptographic auth** — Every CLI submission is signed with the participant's keypair.
 - ✅ **On-chain finality** — Scores written to PDAs cannot be modified post-submission.
 - ✅ **Soulbound NFTs** — `PermanentFreezeDelegate` with no unfreeze authority.
-- ✅ **Lifecycle enforcement** — Certificates gated by `finalize_hackathon`; score threshold ≥ 50.
+- ✅ **Lifecycle enforcement** — Certificates gated by `finalize_hackathon`; threshold ≥ 50.
 
 ---
 
 ## Demo Flow (2-Minute Pitch)
 
-1. **Connect** → Participant connects Phantom wallet on the dashboard
-2. **Submit** → `judgenod submit` packages the repo, signs payload, and POSTs to the backend
-3. **Score** → Backend runs 5 analyzers, returns score breakdown. On-chain recording happens in background.
-4. **Judge** → Judge logs in, scores across innovation / impact / presentation
-5. **Finalize** → Organizer finalizes the hackathon from the dashboard
-6. **Certify** → `judgenod certificate` mints a soulbound NFT to the winner's wallet
-7. **Verify** → Anyone can check the score + certificate on Solscan
+1. **Connect** → Participant connects Solana wallet on the dashboard.
+2. **Submit** → `judgenod submit` packages, signs, and POSTs the repo to the backend.
+3. **Real-time Verify** → Dashboard updates ranking **instantly** via SSE as the backend scores.
+4. **Judge** → Judge scoresInnovation / Impact / Presentation via the "War Room" panel.
+5. **Finalize** → Organizer locks the hackathon, enabling verifiable certificates.
+6. **Certify** → `judgenod certificate` or the Profile UI mints a soulbound NFT with dynamic metadata.
+7. **Verify** → Authenticate achievement with a single Solscan or Metaplex Explorer link.
 
 ---
 

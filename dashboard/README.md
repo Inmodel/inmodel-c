@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# JudgeChain Dashboard — The On-Chain War Room
 
-## Getting Started
+Professional Next.js dashboard for the JudgeChain ecosystem. Track submissions, view real-time rankings, and manage hackathon lifecycles from a single interface.
 
-First, run the development server:
+## Key Features (Hardened)
+
+### ⚡ Real-Time Leaderboard (SSE)
+We've replaced traditional polling with **Server-Sent Events (SSE)**.
+- rankings update instantly as soon as a submission is scored.
+- **Fallback**: Automatically degrades to 15-second polling if the SSE stream is interrupted.
+
+### 👤 Extended Participant Profiles
+Each participant has a dedicated profile that displays:
+- **Submission History**: A full audit trail of past projects on JudgeChain.
+- **Certificate Management**: Claim and view Metaplex Core soulbound NFTs for qualified submissions.
+- **GitHub Linkage**: Direct link to your developer identity.
+
+### ⚖️ Judge & Organizer "War Room"
+- **Speed Scoring**: Highly optimized judge panel for rapid evaluation.
+- **On-Chain Control**: Organizers can finalize hackathons and manage collections directly from the UI.
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required environment variables (`.env.local`):
+- `NEXT_PUBLIC_API_URL`: Path to the FastAPI backend.
+- `NEXT_PUBLIC_RPC_URL`: Solana cluster URL (e.g., https://api.devnet.solana.com).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech Stack
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Tailwind CSS + Shadcn UI
+- **Blockchain**: @solana/wallet-adapter-react + @coral-xyz/anchor
+- **Icons**: Lucide React
+- **Notifications**: Sonner
