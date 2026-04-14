@@ -70,6 +70,29 @@ interface ScoreResponse {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+async function retryRequest<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  backoffBase = 1000,
+): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err: unknown) {
+      lastErr = err;
+      const isRetryable =
+        axios.isAxiosError(err) && (!err.response || err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'ECONNRESET')
+        || (err instanceof TypeError && String(err.message).includes('fetch'));
+      if (!isRetryable || attempt === maxAttempts) throw err;
+      const delay = backoffBase * Math.pow(2, attempt - 1);
+      if (process.env.DEBUG) console.error(chalk.dim(`[retry] attempt ${attempt}/${maxAttempts} failed, retrying in ${delay}ms...`));
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw lastErr;
+}
+
 function loadConfig(): JudgeNodConfig {
   if (fs.existsSync(CONFIG_FILE)) {
     try { return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')); } catch { return {}; }
@@ -170,9 +193,11 @@ async function runSubmit(
   ).toString('base64');
 
   if (jsonMode) {
-    const { data } = await axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
-      headers: { 'Content-Type': 'application/json', 'x-signature': signature, 'x-network': network },
-    });
+    const { data } = await retryRequest(() =>
+      axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
+        headers: { 'Content-Type': 'application/json', 'x-signature': signature, 'x-network': network },
+      })
+    );
     console.log(JSON.stringify(data, null, 2));
     return data;
   }
@@ -180,9 +205,11 @@ async function runSubmit(
   const s = p.spinner();
   s.start('Analyzing repository and submitting to JudgeNod');
   try {
-    const { data } = await axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
-      headers: { 'Content-Type': 'application/json', 'x-signature': signature, 'x-network': network },
-    });
+    const { data } = await retryRequest(() =>
+      axios.post<ScoreResponse>(`${API_URL}/score`, payloadStr, {
+        headers: { 'Content-Type': 'application/json', 'x-signature': signature, 'x-network': network },
+      })
+    );
     s.stop('Submission verified');
     displayScore(data);
     p.outro(`${chalk.green('✔')} Successfully submitted to JudgeNod!`);
