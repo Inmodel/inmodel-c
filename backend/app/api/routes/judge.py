@@ -6,11 +6,14 @@ from app.database import get_db
 from app import db_store
 from app.models.db_models import Submission
 from app.scoring.solana_client import record_score_on_chain
+from app.events import broadcast
+from app.limiter import limiter
 import os
 
 AUTHORIZED_JUDGES = os.getenv("AUTHORIZED_JUDGES", "").split(",")
 
 router = APIRouter()
+
 
 
 @router.get("/judge/submissions")
@@ -30,6 +33,7 @@ async def list_judge_submissions(
 
 
 @router.post("/judge/score")
+@limiter.limit("10/minute")
 async def judge_score(
     request: Request,
     body: JudgeScoreInput,
@@ -67,6 +71,10 @@ async def judge_score(
         judge_score,
         final_score,
     )
+
+    # Broadcast to SSE subscribers
+    if updated:
+        background_tasks.add_task(broadcast, "score_update", updated)
 
     return updated
 
