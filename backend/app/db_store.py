@@ -16,6 +16,8 @@ def to_dict(s: Submission) -> dict:
         "submission_id": s.submission_id,
         "problem_id": s.problem_id,
         "wallet": s.wallet,
+        "repo_url": s.repo_url,
+        "deployment_url": s.deployment_url,
         "system_score": {
             "code_quality": s.score_code_quality,
             "test_coverage": s.score_test_coverage,
