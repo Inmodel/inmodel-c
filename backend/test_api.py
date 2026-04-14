@@ -15,11 +15,17 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # Force a clean test database
 TEST_DB = "sqlite:///./test_judgechain.db"
 os.environ["DATABASE_URL"] = TEST_DB
+os.environ["JUDGECHAIN_ENV"] = "test"
 
 import pytest
 from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 from solders.keypair import Keypair
+
+# Pre-generate a judge keypair for all judge tests
+TEST_JUDGE_KP = Keypair()
+os.environ["AUTHORIZED_JUDGES"] = str(TEST_JUDGE_KP.pubkey())
+
 
 from main import app
 from app.database import Base, engine
@@ -242,7 +248,13 @@ class TestLeaderboard:
 
 class TestJudgeSubmissions:
     def test_list_empty(self, client: TestClient):
-        r = client.get("/api/v1/judge/submissions")
+        judge_wallet = str(TEST_JUDGE_KP.pubkey())
+        # Sign the fixed message "list_submissions"
+        sig = base64.b64encode(bytes(TEST_JUDGE_KP.sign_message(b"list_submissions"))).decode("utf-8")
+        r = client.get(
+            "/api/v1/judge/submissions",
+            headers={"x-wallet": judge_wallet, "x-signature": sig}
+        )
         assert r.status_code == 200
         assert r.json() == []
 
@@ -262,7 +274,12 @@ class TestJudgeSubmissions:
             headers={"Content-Type": "application/json", "x-signature": sig},
         )
 
-        r = client.get("/api/v1/judge/submissions")
+        judge_wallet = str(TEST_JUDGE_KP.pubkey())
+        sig_judge = base64.b64encode(bytes(TEST_JUDGE_KP.sign_message(b"list_submissions"))).decode("utf-8")
+        r = client.get(
+            "/api/v1/judge/submissions",
+            headers={"x-wallet": judge_wallet, "x-signature": sig_judge}
+        )
         assert r.status_code == 200
         assert len(r.json()) >= 1
 
@@ -289,8 +306,7 @@ class TestJudgeScore:
 
     def test_judge_score_success(self, client: TestClient, keypair: Keypair):
         sid = self._submit_first(client, keypair)
-        judge_kp = Keypair()
-        judge_wallet = str(judge_kp.pubkey())
+        judge_wallet = str(TEST_JUDGE_KP.pubkey())
 
         judge_payload = {
             "submission_id": sid,
@@ -299,7 +315,7 @@ class TestJudgeScore:
             "presentation": 9.0,
             "judge_wallet": judge_wallet,
         }
-        body, sig = _sign(judge_kp, judge_payload)
+        body, sig = _sign(TEST_JUDGE_KP, judge_payload)
 
         r = client.post(
             "/api/v1/judge/score", content=body,
@@ -313,8 +329,7 @@ class TestJudgeScore:
 
     def test_judge_score_duplicate_returns_409(self, client: TestClient, keypair: Keypair):
         sid = self._submit_first(client, keypair)
-        judge_kp = Keypair()
-        judge_wallet = str(judge_kp.pubkey())
+        judge_wallet = str(TEST_JUDGE_KP.pubkey())
 
         judge_payload = {
             "submission_id": sid,
@@ -323,7 +338,7 @@ class TestJudgeScore:
             "presentation": 9.0,
             "judge_wallet": judge_wallet,
         }
-        body, sig = _sign(judge_kp, judge_payload)
+        body, sig = _sign(TEST_JUDGE_KP, judge_payload)
 
         # First score
         r1 = client.post(
@@ -340,8 +355,7 @@ class TestJudgeScore:
         assert r2.status_code == 409
 
     def test_judge_score_missing_submission_returns_404(self, client: TestClient):
-        judge_kp = Keypair()
-        judge_wallet = str(judge_kp.pubkey())
+        judge_wallet = str(TEST_JUDGE_KP.pubkey())
         judge_payload = {
             "submission_id": str(uuid.uuid4()),
             "innovation": 5.0,
@@ -349,7 +363,7 @@ class TestJudgeScore:
             "presentation": 5.0,
             "judge_wallet": judge_wallet,
         }
-        body, sig = _sign(judge_kp, judge_payload)
+        body, sig = _sign(TEST_JUDGE_KP, judge_payload)
         r = client.post(
             "/api/v1/judge/score", content=body,
             headers={"Content-Type": "application/json", "x-signature": sig},
@@ -368,7 +382,8 @@ class TestJudgeScore:
                 "judge_wallet": "FakeWallet",
             },
         )
-        assert r.status_code == 401
+        assert r.status_code == 403
+
 
 
 # ── Tests: GET /api/v1/problems ───────────────────────────────────────────────
