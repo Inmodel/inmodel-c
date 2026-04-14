@@ -3,6 +3,7 @@ import httpx
 import os
 import base64
 from fastapi import HTTPException
+from app.utils.retry import with_retry
 
 GITHUB_HEADERS = {
     "User-Agent": "JudgeChain-MVP",
@@ -24,6 +25,7 @@ def parse_github_repo(url: str) -> tuple[str, str]:
     repo = match.group(2).replace(".git", "").split("?")[0].split("#")[0]
     return owner, repo
 
+@with_retry(max_attempts=3, backoff_base=1.0)
 async def fetch_github_api(endpoint: str) -> httpx.Response:
     url = f"https://api.github.com/{endpoint.lstrip('/')}"
     return await _github_client.get(url)
