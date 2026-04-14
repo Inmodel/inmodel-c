@@ -43,18 +43,67 @@ export default function LeaderboardPage() {
     if (selectedProblem) fetchLeaderboard(selectedProblem);
   }, [selectedProblem, fetchLeaderboard]);
 
+  // SSE & Polling
   useEffect(() => {
     if (!selectedProblem) return;
-    const interval = setInterval(() => {
-      setRefreshCountdown((prev) => {
-        if (prev <= 1) {
-          fetchLeaderboard(selectedProblem);
-          return 15;
+
+    let eventSource: EventSource | null = null;
+    let pollingInterval: NodeJS.Timeout | null = null;
+    
+    const startPolling = () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+      pollingInterval = setInterval(() => {
+        setRefreshCountdown((prev) => {
+          if (prev <= 1) {
+            fetchLeaderboard(selectedProblem);
+            return 15;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    };
+
+    // Try EventSource for SSE
+    const connectSSE = () => {
+      const sseUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/events/leaderboard`;
+      eventSource = new EventSource(sseUrl);
+
+      eventSource.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          // If the event relates to a submission, we can refetch the leaderboard or patch local state
+          // For simplicity & safety during hackathon, we trigger a refetch of the leaderboard
+          if (payload && payload.problem_id === selectedProblem) {
+             console.log("SSE update received", payload);
+             fetchLeaderboard(selectedProblem);
+          }
+        } catch (e) {
+          // ignore parsing error
         }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
+      };
+
+      eventSource.onerror = (err) => {
+        console.warn("SSE connection error", err);
+        eventSource?.close();
+        if (pollingInterval) clearInterval(pollingInterval);
+        startPolling(); // Fallback to polling
+      };
+
+      eventSource.onopen = () => {
+        // SSE is active, suspend polling if you like, or let polling continue but at a slower rate
+        setRefreshCountdown(15);
+      };
+    };
+
+    // Both polling and SSE are enabled here. The polling serves as a fallback 
+    // mechanism, and SSE will trigger immediate refetches when updates occur.
+    startPolling();
+    connectSSE();
+
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+      if (eventSource) eventSource.close();
+    };
   }, [selectedProblem, fetchLeaderboard]);
 
   const getRankClass = (index: number) => {
