@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                <Sidebar />
             </div>
             
-            <header style={{ gridColumn: "2", gridRow: "1", display: "flex", justifyContent: "flex-end", alignItems: "center", padding: "0 24px", borderBottom: "1px solid var(--bg-border)", background: "var(--bg-base)" }}>
+            <header style={{ gridColumn: "2", gridRow: "1", display: "flex", justifyContent: "flex-end", alignItems: "center", padding: "0 24px", height: "56px", borderBottom: "1px solid var(--bg-border)", background: "var(--bg-base)", top: 0, position: "sticky", zIndex: 10 }}>
                <WalletButton />
             </header>
 
