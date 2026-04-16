@@ -1,17 +1,22 @@
 import uuid
+import time
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.models.schemas import SubmissionInput, ScoreResponse
-from app.scoring.engine import execute_scoring_pipeline
+from app.security import SecurityError
+from app.scoring.secure_engine import SecureScoringEngine
 from app.api.auth import require_solana_signature
 from app.scoring.solana_client import record_score_on_chain
 from app.database import get_db
 from app import db_store
 from app.events import broadcast
 from app.limiter import limiter
+from app.models.db_models import SecurityAuditRecord
 
 router = APIRouter()
 
+# Initialize secure scoring engine
+secure_engine = SecureScoringEngine()
 
 
 @router.post("/score", response_model=ScoreResponse)
@@ -30,15 +35,39 @@ async def submit_and_score(
     if existing:
         return existing
 
-    sys_score = await execute_scoring_pipeline(submission)
+    # Execute secure scoring pipeline
+    try:
+        sys_score, security_metadata = await secure_engine.execute_scoring_pipeline(submission)
+    except SecurityError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     resp = ScoreResponse(
         submission_id=str(uuid.uuid4()),
         problem_id=submission.problem_id,
         wallet=submission.participant_wallet,
         system_score=sys_score,
+        security=security_metadata,
     )
     db_store.save(db, resp.model_dump(), submission.repo_url, submission.deployment_url)
+
+    # Save security audit record
+    audit_record = SecurityAuditRecord(
+        submission_id=resp.submission_id,
+        wallet=submission.participant_wallet,
+        timestamp=int(time.time()),
+        repo_url=submission.repo_url,
+        injection_attempts=security_metadata.injection_attempts_detected,
+        injection_threat_level=security_metadata.scan_result,
+        content_hash_pre_sanitize="",  # Would be populated by scanner
+        content_hash_post_sanitize="",  # Would be populated by scanner
+        gaming_flags=security_metadata.gaming_flags,
+        score_penalties_applied=security_metadata.penalties_applied,
+        raw_system_score=sys_score.total,
+        final_system_score=sys_score.total,
+        was_penalized=security_metadata.penalties_applied > 0,
+    )
+    db.add(audit_record)
+    db.commit()
 
     background_tasks.add_task(
         record_score_on_chain,
