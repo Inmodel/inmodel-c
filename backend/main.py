@@ -13,8 +13,15 @@ from app.api.routes.submissions import router as submissions_router
 from app.api.routes.metadata import router as metadata_router
 from app.api.routes.github_auth import router as github_auth_router
 from app.database import init_db
+from app.security import setup_security_logger
 
+# Configure main logging
 logging.basicConfig(level=logging.INFO)
+
+# Configure security logging
+security_logger = setup_security_logger("security")
+injection_logger = setup_security_logger("security.injection")
+gaming_logger = setup_security_logger("security.gaming")
 
 from contextlib import asynccontextmanager
 
