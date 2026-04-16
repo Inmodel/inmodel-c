@@ -33,6 +33,19 @@ class SystemScore(BaseModel):
     total: int
 
 
+class SecurityMetadata(BaseModel):
+    """
+    Security metadata for a scored submission.
+    
+    Includes injection detection results, gaming flags, and penalties applied.
+    """
+    scan_result: str  # "clean" | "suspicious" | "blocked"
+    injection_attempts_detected: int
+    gaming_flags: List[str]
+    penalties_applied: int
+    audit_hash: str  # first 16 chars of SHA256
+
+
 class ScoreResponse(BaseModel):
     submission_id: str
     problem_id: str
@@ -42,6 +55,7 @@ class ScoreResponse(BaseModel):
     final_score: Optional[int] = None
     tx_hash: Optional[str] = None
     status: str = "scored"
+    security: Optional[SecurityMetadata] = None
 
 
 class JudgeScoreInput(BaseModel):
