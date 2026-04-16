@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, Boolean, func
+from sqlalchemy import Column, String, Integer, DateTime, Boolean, func, JSON
 from app.database import Base
 
 
@@ -27,3 +27,35 @@ class Submission(Base):
     judge_submitted = Column(Boolean, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class SecurityAuditRecord(Base):
+    """
+    Security audit trail for all submissions.
+    
+    Tracks injection attempts, gaming flags, and score penalties
+    for forensic analysis and security monitoring.
+    """
+    __tablename__ = "security_audit"
+
+    id = Column(Integer, primary_key=True, index=True)
+    submission_id = Column(String, index=True, nullable=False)
+    wallet = Column(String, index=True, nullable=False)
+    timestamp = Column(Integer, nullable=False, index=True)  # Unix timestamp
+
+    repo_url = Column(String, nullable=False)
+
+    # Layer 2: Injection Scanner results
+    injection_attempts = Column(JSON, default=list)  # list of pattern matches
+    injection_threat_level = Column(String, nullable=False)  # clean/suspicious/blocked
+    content_hash_pre_sanitize = Column(String, nullable=False)  # SHA256
+    content_hash_post_sanitize = Column(String, nullable=False)  # SHA256
+
+    # Layer 5: Anti-Gaming Checker results
+    gaming_flags = Column(JSON, default=list)  # list of gaming flags
+    score_penalties_applied = Column(Integer, default=0)
+
+    # Final scores
+    raw_system_score = Column(Integer, nullable=False)  # before penalties
+    final_system_score = Column(Integer, nullable=False)  # after penalties
+    was_penalized = Column(Boolean, default=False)
