@@ -5,107 +5,105 @@ import { StatCard } from "@/components/ui/StatCard";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 
 export default function Home() {
-  const [score, setScore] = useState(0);
+  const [stats, setStats] = useState({ total: 0, active: 0, nfts: 0 });
 
   useEffect(() => {
-    let current = 0;
+    let start = 0;
     const interval = setInterval(() => {
-      current += 1;
-      setScore(current);
-      if (current >= 87) clearInterval(interval);
-    }, 15);
+      start += 1;
+      setStats({
+        total: Math.min(start * 24, 1204),
+        active: Math.min(start, 4),
+        nfts: Math.min(start * 15, 782)
+      });
+      if (start > 50) clearInterval(interval);
+    }, 20);
     return () => clearInterval(interval);
   }, []);
 
+  const feedEvents = [
+    { time: "3 min ago", text: "Score finalized", detail: "9vBo... 82pts", color: "text-[var(--amber-base)]" },
+    { time: "7 min ago", text: "Certificate minted", detail: "7mKp...", color: "text-[var(--green-base)]" },
+    { time: "12 min ago", text: "Submission scored", detail: "2nRt... 70pts", color: "text-[var(--text-secondary)]" },
+    { time: "18 min ago", text: "New submission", detail: "5cLm...", color: "text-[var(--text-secondary)]" },
+    { time: "34 min ago", text: "Score finalized", detail: "8hJd... 65pts", color: "text-[var(--amber-base)]" },
+    { time: "1 hr ago", text: "New submission", detail: "1xZp...", color: "text-[var(--text-secondary)]" },
+  ];
+
   return (
-    <main className="content-area pt-8 mb-16 relative">
-      <div className="ambient-glow" />
-      
-      {/* Top Hero / Stats Row */}
-      <div className="bento-stat stagger-item">
-        <StatCard label="Total Submissions" value="1,204" delta="+12% this week" />
-      </div>
-      <div className="bento-stat stagger-item">
-        <StatCard label="Prizes Distributed" value="125 SOL" delta="Paid automatically" />
-      </div>
-      <div className="bento-stat stagger-item">
-        <StatCard label="Active Judges" value="48" delta="Online now" />
-      </div>
-      <div className="bento-feed stagger-item bg-surface border border-border p-5 rounded-lg flex flex-col items-center justify-center relative overflow-hidden">
-        <div className="text-hero text-amber-base font-data leading-none drop-shadow-md">
-          {score}
+    <main className="p-6 w-full max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-min">
+        {/* Row 1 Stats */}
+        <div className="col-span-1 md:col-span-4 lg:col-span-3 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 animate-fade-in opacity-0" style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}>
+          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-2">Total Submissions</div>
+          <div className="text-3xl text-white font-mono">{stats.total}</div>
         </div>
-        <div className="font-data text-xs text-muted tracking-widest mt-2 uppercase">Platform Average Score</div>
-      </div>
-
-      {/* Middle Row */}
-      <div className="bento-leader stagger-item bg-surface border border-border rounded-lg p-6 min-h-[300px]">
-        <h2 className="text-sm font-data mb-6 uppercase tracking-widest text-secondary border-b border-border pb-4">Top Auto-Scored Submissions</h2>
-        <div className="space-y-5">
-           <div className="flex justify-between items-center pb-2">
-             <div className="flex items-center gap-4">
-                <span className="font-data text-muted text-xs">01</span>
-                <span className="font-data text-primary text-sm uppercase tracking-widest">Solana Pay Hub</span>
-             </div>
-             <span className="font-data text-amber-base">98.5</span>
-           </div>
-           <div className="flex justify-between items-center pb-2">
-             <div className="flex items-center gap-4">
-                <span className="font-data text-muted text-xs">02</span>
-                <span className="font-data text-primary text-sm uppercase tracking-widest">DeFi Analytics Dashboard</span>
-             </div>
-             <span className="font-data text-amber-base">94.2</span>
-           </div>
-           <div className="flex justify-between items-center pb-2">
-             <div className="flex items-center gap-4">
-                <span className="font-data text-muted text-xs">03</span>
-                <span className="font-data text-primary text-sm uppercase tracking-widest">NFT Marketplace Contract</span>
-             </div>
-             <span className="font-data text-amber-base">91.0</span>
-           </div>
+        <div className="col-span-1 md:col-span-4 lg:col-span-3 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 animate-fade-in opacity-0" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-2">Active Hackathons</div>
+          <div className="text-3xl text-white font-mono">{stats.active}</div>
         </div>
-      </div>
-
-      <div className="bento-score stagger-item bg-surface border border-border rounded-lg p-6 flex flex-col justify-center items-center relative overflow-hidden min-h-[300px]">
-        <h2 className="text-sm font-data mb-6 uppercase tracking-widest text-secondary w-full text-left absolute top-6 left-6">Real-Time Processing</h2>
-        <ScoreRing score={score} size={180} />
-      </div>
-
-      {/* Bottom Row */}
-      <div className="bento-full stagger-item bg-surface border border-border rounded-lg p-6 mt-4">
-        <h2 className="text-sm font-data mb-4 uppercase tracking-widest text-secondary">Recent On-Chain Events</h2>
-        <div className="flex gap-2 items-center text-xs font-data text-muted mb-4">
-          <span className="chain-dot" /> Live feed connected via Devnet
+        <div className="col-span-1 md:col-span-4 lg:col-span-3 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 animate-fade-in opacity-0" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
+          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-2">NFTs Minted</div>
+          <div className="text-3xl text-white font-mono">{stats.nfts}</div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-           <div className="p-4 bg-elevated rounded border border-border font-data text-xs flex justify-between hover:border-amber-muted transition-colors items-center">
-              <div>
-                <div className="text-amber-base mb-1">SCORE PUSHED</div>
-                <span className="text-primary">Submission ID: #8a2b...4f1e</span>
+
+        {/* Live Feed - Spans 2 rows */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-3 lg:row-span-2 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 flex flex-col animate-fade-in opacity-0" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
+          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-6 border-b border-[var(--bg-border)] pb-2 flex justify-between items-center">
+            <span>Live Feed</span>
+            <span className="w-2 h-2 rounded-full bg-[var(--green-base)] animate-pulse"></span>
+          </div>
+          <div className="flex flex-col gap-4 overflow-y-auto pr-2">
+            {feedEvents.map((ev, i) => (
+              <div key={i} className="flex flex-col border-l border-[var(--bg-border)] pl-3 ml-1 py-1">
+                <span className="text-[10px] text-[var(--text-muted)] font-mono">{ev.time}</span>
+                <span className="text-sm text-[var(--text-primary)] font-medium mt-1">{ev.text}</span>
+                <span className={`text-xs font-mono mt-0.5 ${ev.color}`}>{ev.detail}</span>
               </div>
-              <span className="text-muted">12s ago</span>
-           </div>
-           <div className="p-4 bg-elevated rounded border border-border font-data text-xs flex justify-between hover:border-amber-muted transition-colors items-center">
-              <div>
-                <div className="text-green-base mb-1">CERTIFICATE MINTED</div>
-                <span className="text-primary">Solana Pay Hub - Gold Rank</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Leaderboard Preview */}
+        <div className="col-span-1 md:col-span-7 lg:col-span-6 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 min-h-[300px] animate-fade-in opacity-0" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
+          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-6 border-b border-[var(--bg-border)] pb-2">Top Submissions Preview</div>
+          <div className="space-y-4">
+            {[ 
+              { rank: "01", name: "Solana Pay Hub", score: 98, color: "#FFD700" },
+              { rank: "02", name: "DeFi Analytics Dashboard", score: 94, color: "#C0C0C0" },
+              { rank: "03", name: "NFT Marketplace Contract", score: 91, color: "#CD7F32" }
+            ].map((item, i) => (
+              <div key={i} className="flex justify-between items-center group cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <span className="font-mono text-[var(--text-muted)] text-xs border-l-2 pl-2" style={{ borderColor: item.color }}>{item.rank}</span>
+                  <span className="font-mono text-[var(--text-primary)] text-sm group-hover:text-[var(--amber-base)] transition-colors">{item.name}</span>
+                </div>
+                <span className="font-mono text-[var(--amber-base)] font-bold">{item.score}</span>
               </div>
-              <span className="text-muted">1m ago</span>
-           </div>
-           <div className="p-4 bg-elevated rounded border border-border font-data text-xs flex justify-between hover:border-amber-muted transition-colors items-center">
-              <div>
-                <div className="text-secondary mb-1">SMART CONTRACT CALL</div>
-                <span className="text-primary">init_submission() by 7X9p...k2M1</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Score Breakdown */}
+        <div className="col-span-1 md:col-span-5 lg:col-span-3 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 flex flex-col justify-center items-center min-h-[300px] animate-fade-in opacity-0" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
+          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-4 border-b border-[var(--bg-border)] pb-2 w-full">Avg Score</div>
+          <ScoreRing score={87} size={160} />
+        </div>
+
+        {/* Recent Submissions */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-12 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 mt-4 min-h-[200px] animate-fade-in opacity-0" style={{ animationDelay: '600ms', animationFillMode: 'forwards' }}>
+          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-4 border-b border-[var(--bg-border)] pb-2">Recent Submissions</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="p-4 bg-[var(--bg-base)] border border-[var(--bg-border)] flex justify-between items-center hover:border-[var(--amber-base)] transition-colors">
+                 <div className="flex flex-col">
+                   <span className="text-[10px] text-[var(--amber-base)] font-mono mb-1">EVALUATING</span>
+                   <span className="text-white text-sm font-mono truncate max-w-[120px]">Project #{i}29A</span>
+                 </div>
+                 <div className="w-2 h-2 rounded-full border border-[var(--text-muted)] animate-pulse"></div>
               </div>
-              <span className="text-muted">4m ago</span>
-           </div>
-           <div className="p-4 bg-elevated rounded border border-border font-data text-xs flex justify-between hover:border-amber-muted transition-colors items-center">
-              <div>
-                <div className="text-amber-base mb-1">SCORE PUSHED</div>
-                <span className="text-primary">Submission ID: #2c9d...1a4f</span>
-              </div>
-              <span className="text-muted">5m ago</span>
-           </div>
+            ))}
+          </div>
         </div>
       </div>
     </main>
