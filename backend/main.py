@@ -35,7 +35,7 @@ app = FastAPI(title="JudgeChain Backend", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://hacknod.inmodel.in,https://api.judgechain.xyz").split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,4 +57,12 @@ app.include_router(github_auth_router, prefix="/api/v1")
 @app.get("/")
 def read_root():
     return {"status": "ok", "message": "JudgeChain Scoring Engine is running."}
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "program_id": os.getenv("PROGRAM_ID"),
+        "network": "devnet"
+    }
 

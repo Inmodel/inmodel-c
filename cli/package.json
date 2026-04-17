@@ -2,18 +2,26 @@
   "name": "judgenod",
   "version": "1.0.0",
   "description": "CLI to submit Hackathon projects to JudgeNod on Solana",
-  "main": "index.js",
+  "main": "dist/index.js",
   "bin": {
-    "judgenod": "dist/index.js"
+    "judgenod": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["solana", "hackathon", "judging", "blockchain", "cli"],
+  "author": "Inmodel Labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NitishKumar-ai/judgechain"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "type": "commonjs",
   "dependencies": {
     "@clack/prompts": "^1.2.0",

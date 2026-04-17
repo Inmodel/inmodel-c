@@ -1,6 +1,7 @@
 import os
 import logging
 import hashlib
+import json
 from pathlib import Path
 from typing import Optional
 from solana.rpc.async_api import AsyncClient
@@ -26,12 +27,16 @@ async def get_program() -> Program:
     idl_path = Path(__file__).parent.parent.parent / "judgechain.json"
     if not idl_path.exists():
         raise FileNotFoundError(f"IDL not found at {idl_path}")
-    if not os.path.exists(WALLET_PATH):
-        raise FileNotFoundError(f"Judge wallet not found at {WALLET_PATH}")
+    wallet_json = os.getenv("ANCHOR_WALLET_JSON")
+    if wallet_json:
+        keypair = Keypair.from_bytes(bytes(json.loads(wallet_json)))
+    else:
+        if not os.path.exists(WALLET_PATH):
+            raise FileNotFoundError(f"Judge wallet not found at {WALLET_PATH}")
 
-    with open(WALLET_PATH) as f:
-        secret = list(map(int, f.read().strip("[]").split(",")))
-    keypair = Keypair.from_bytes(bytes(secret))
+        with open(WALLET_PATH) as f:
+            secret = list(map(int, f.read().strip("[]").split(",")))
+        keypair = Keypair.from_bytes(bytes(secret))
     wallet = Wallet(keypair)
 
     with open(idl_path) as f:

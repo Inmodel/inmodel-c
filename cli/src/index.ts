@@ -12,12 +12,13 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import boxen from 'boxen';
 import * as p from '@clack/prompts';
+import { CONFIG } from './config';
 
 const program = new Command();
 
 const GITHUB_URL_RE = /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+(\/)?$/;
 const URL_RE = /^https?:\/\/.+\..+/;
-const API_URL = process.env.JUDGECHAIN_API_URL ?? 'http://localhost:8000/api/v1';
+const API_URL = CONFIG.API_URL;
 const DEFAULT_KEYPAIR = path.join(os.homedir(), '.config', 'solana', 'id.json');
 const CONFIG_FILE = '.judgenod.json';
 

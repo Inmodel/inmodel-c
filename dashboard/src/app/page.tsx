@@ -34,18 +34,24 @@ export default function Home() {
     <main className="p-6 w-full max-w-7xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-min">
         {/* Row 1 Stats */}
-        <div className="col-span-1 md:col-span-4 lg:col-span-3 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 animate-fade-in opacity-0" style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}>
-          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-2">Total Submissions</div>
-          <div className="text-3xl text-white font-mono">{stats.total}</div>
-        </div>
-        <div className="col-span-1 md:col-span-4 lg:col-span-3 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 animate-fade-in opacity-0" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-2">Active Hackathons</div>
-          <div className="text-3xl text-white font-mono">{stats.active}</div>
-        </div>
-        <div className="col-span-1 md:col-span-4 lg:col-span-3 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 animate-fade-in opacity-0" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
-          <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-mono mb-2">NFTs Minted</div>
-          <div className="text-3xl text-white font-mono">{stats.nfts}</div>
-        </div>
+        <StatCard 
+          label="Total Submissions" 
+          value={stats.total} 
+          className="col-span-1 md:col-span-4 lg:col-span-3 animate-fade-in opacity-0" 
+          style={{ animationDelay: '0ms', animationFillMode: 'forwards' }} 
+        />
+        <StatCard 
+          label="Active Hackathons" 
+          value={stats.active} 
+          className="col-span-1 md:col-span-4 lg:col-span-3 animate-fade-in opacity-0" 
+          style={{ animationDelay: '100ms', animationFillMode: 'forwards' }} 
+        />
+        <StatCard 
+          label="NFTs Minted" 
+          value={stats.nfts} 
+          className="col-span-1 md:col-span-4 lg:col-span-3 animate-fade-in opacity-0" 
+          style={{ animationDelay: '200ms', animationFillMode: 'forwards' }} 
+        />
 
         {/* Live Feed - Spans 2 rows */}
         <div className="col-span-1 md:col-span-12 lg:col-span-3 lg:row-span-2 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-5 flex flex-col animate-fade-in opacity-0" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
