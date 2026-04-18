@@ -471,7 +471,7 @@ program.command('init')
               `Metadata URI: ${certData.metadata_uri}\n` +
               `TX: ${certData.tx_sig}\n` +
               `Solscan: https://solscan.io/tx/${certData.tx_sig}?cluster=${options.network}`,
-              { padding: 1, borderColor: 'yellow', title: 'JudgeChain Certificate' }
+              { padding: 1, borderColor: 'yellow', title: 'JudgeNod Certificate' }
             ));
           } catch (err) {
             s2.stop('Mint failed');
@@ -580,7 +580,7 @@ program
           `Metadata URI: ${data.metadata_uri}\n` +
           `TX: ${data.tx_sig}\n` +
           `Solscan: https://solscan.io/tx/${data.tx_sig}?cluster=${options.network}`,
-          { padding: 1, borderColor: 'yellow', title: 'JudgeChain Certificate' }
+          { padding: 1, borderColor: 'yellow', title: 'JudgeNod Certificate' }
         )
       );
     } catch (err) {
