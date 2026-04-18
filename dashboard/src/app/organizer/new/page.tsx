@@ -7,21 +7,70 @@ import { web3 } from "@coral-xyz/anchor";
 import { useProgram, getHackathonPda } from "../../../lib/useProgram";
 import { toast } from "sonner";
 
+interface CriterionRule {
+  id: string;
+  description: string;
+  points: number;
+  validator: string;
+  params: Record<string, string>;
+}
+
+interface ProblemInput {
+  id: string;
+  title: string;
+  description: string;
+  max_custom_points: number;
+  custom_criteria: CriterionRule[];
+}
+
 export default function NewHackathonPage() {
   const router = useRouter();
   const { publicKey } = useWallet();
   const program = useProgram();
   const [name, setName] = useState("");
-  const [problems, setProblems] = useState([{ id: "", title: "", description: "" }]);
+  const [problems, setProblems] = useState<ProblemInput[]>([
+    { id: "", title: "", description: "", max_custom_points: 10, custom_criteria: [] }
+  ]);
   const [creating, setCreating] = useState(false);
 
   function addProblem() {
-    setProblems([...problems, { id: "", title: "", description: "" }]);
+    setProblems([...problems, { id: "", title: "", description: "", max_custom_points: 10, custom_criteria: [] }]);
   }
 
-  function updateProblem(index: number, field: string, value: string) {
+  function updateProblem(index: number, field: keyof ProblemInput, value: string | number | CriterionRule[]) {
     const next = [...problems];
     next[index] = { ...next[index], [field]: value };
+    setProblems(next);
+  }
+
+  function addCriterion(pIdx: number) {
+    const next = [...problems];
+    next[pIdx].custom_criteria.push({
+      id: `criterion_${Date.now()}`,
+      description: "",
+      points: 5,
+      validator: "has_dependency",
+      params: { package: "" }
+    });
+    setProblems(next);
+  }
+
+  function updateCriterion(pIdx: number, cIdx: number, field: keyof CriterionRule, value: string | number | Record<string, string>) {
+    const next = [...problems];
+    const updated = { ...next[pIdx].custom_criteria[cIdx], [field]: value };
+    next[pIdx].custom_criteria[cIdx] = updated as CriterionRule;
+    setProblems(next);
+  }
+  
+  function updateCriterionParam(pIdx: number, cIdx: number, key: string, value: string) {
+    const next = [...problems];
+    next[pIdx].custom_criteria[cIdx].params[key] = value;
+    setProblems(next);
+  }
+
+  function removeCriterion(pIdx: number, cIdx: number) {
+    const next = [...problems];
+    next[pIdx].custom_criteria.splice(cIdx, 1);
     setProblems(next);
   }
 
@@ -132,6 +181,67 @@ export default function NewHackathonPage() {
                     value={p.description}
                     onChange={e => updateProblem(i, "description", e.target.value)}
                   />
+
+                  {/* CUSTOM SCORING CRITERIA */}
+                  <div className="pt-4 border-t border-border mt-3">
+                    <div className="flex justify-between items-center mb-3">
+                      <label className="text-xs font-bold text-muted uppercase tracking-widest">Custom Scoring Criteria</label>
+                      <button type="button" onClick={() => addCriterion(i)} className="text-xs text-accent hover:underline">+ Add Criterion</button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {p.custom_criteria.map((c, cIdx) => (
+                        <div key={cIdx} className="bg-card border border-border p-3 rounded-md grid grid-cols-12 gap-3 relative">
+                          <button type="button" onClick={() => removeCriterion(i, cIdx)} className="absolute top-2 right-2 text-red-500 hover:text-red-400 text-xs font-bold">X</button>
+                          <div className="col-span-8">
+                            <input 
+                              className="w-full bg-background border border-border rounded-md px-2 py-1 text-xs outline-none" 
+                              placeholder="Description" value={c.description} onChange={e => updateCriterion(i, cIdx, "description", e.target.value)} 
+                            />
+                          </div>
+                          <div className="col-span-4">
+                            <input 
+                              className="w-full bg-background border border-border rounded-md px-2 py-1 text-xs outline-none" 
+                              type="number" placeholder="Points" value={c.points} onChange={e => updateCriterion(i, cIdx, "points", parseInt(e.target.value) || 0)} 
+                            />
+                          </div>
+                          <div className="col-span-6">
+                            <select 
+                              className="w-full bg-background border border-border rounded-md px-2 py-1 text-xs outline-none"
+                              value={c.validator} onChange={e => {
+                                updateCriterion(i, cIdx, "validator", e.target.value);
+                                if (e.target.value === "has_dependency") updateCriterion(i, cIdx, "params", { package: "" });
+                                else if (e.target.value === "has_file_matching") updateCriterion(i, cIdx, "params", { pattern: "" });
+                                else if (e.target.value === "readme_mentions") updateCriterion(i, cIdx, "params", { keyword: "" });
+                                else updateCriterion(i, cIdx, "params", {});
+                              }}
+                            >
+                              <option value="has_dependency">Has Dependency</option>
+                              <option value="has_file_matching">Has File Matching</option>
+                              <option value="has_folder">Has Folder</option>
+                              <option value="readme_mentions">README Mentions</option>
+                              <option value="has_tests">Has Tests Folder</option>
+                              <option value="deployment_has_endpoint">Deployment Endpoint</option>
+                            </select>
+                          </div>
+                          <div className="col-span-6">
+                            {c.validator === "has_dependency" && (
+                              <input className="w-full bg-background border border-border rounded-md px-2 py-1 text-xs outline-none" placeholder="Package (e.g. anchor)" value={c.params.package || ""} onChange={e => updateCriterionParam(i, cIdx, "package", e.target.value)} />
+                            )}
+                            {c.validator === "has_file_matching" && (
+                              <input className="w-full bg-background border border-border rounded-md px-2 py-1 text-xs outline-none" placeholder="Pattern (e.g. wallet)" value={c.params.pattern || ""} onChange={e => updateCriterionParam(i, cIdx, "pattern", e.target.value)} />
+                            )}
+                            {c.validator === "readme_mentions" && (
+                              <input className="w-full bg-background border border-border rounded-md px-2 py-1 text-xs outline-none" placeholder="Keyword" value={c.params.keyword || ""} onChange={e => updateCriterionParam(i, cIdx, "keyword", e.target.value)} />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      <div className="text-right text-xs text-muted">
+                        Total custom points: {p.custom_criteria.reduce((sum, c) => sum + (c.points || 0), 0)}/{p.max_custom_points}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
