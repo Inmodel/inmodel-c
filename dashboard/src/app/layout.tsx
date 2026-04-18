@@ -14,7 +14,7 @@ const dmSans = DM_Sans({ variable: "--font-body", subsets: ["latin"], weight: ["
 const jetbrainsMono = JetBrains_Mono({ variable: "--font-data", subsets: ["latin"], weight: ["300", "400", "500", "700"] });
 
 export const metadata: Metadata = {
-  title: "JudgeChain | On-Chain Hackathon Scoring",
+  title: "JudgeNod | On-Chain Hackathon Scoring",
   description: "Transparent, immutable judging powered by Solana.",
 };
 
