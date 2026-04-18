@@ -1,3 +1,6 @@
+# CI Workflow for JudgeNod
+# Covers Backend, Dashboard, CLI, and Smart Contracts
+
 name: CI
 
 on:
@@ -8,24 +11,68 @@ on:
 
 jobs:
   backend:
+    name: Backend (FastAPI)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r backend/requirements.txt
-      - run: python -m pytest backend/ -q
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt ruff pytest
+      - name: Lint with Ruff
+        run: ruff check backend/
+      - name: Run tests
+        run: python -m pytest backend/ -q
         env:
           DATABASE_URL: sqlite:///./test.db
 
-  anchor:
+  cli:
+    name: CLI Tool (Node.js)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: "npm"
+          cache-dependency-path: cli/package-lock.json
+      - name: Install dependencies
+        run: cd cli && npm ci
+      - name: Lint
+        run: cd cli && npm run lint
+      - name: Test
+        run: cd cli && npm run test
+      - name: Build
+        run: cd cli && npm run build
+
+  dashboard:
+    name: Dashboard (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: dashboard/package-lock.json
+      - name: Install dependencies
+        run: cd dashboard && npm ci
+      - name: Build
+        run: cd dashboard && npm run build
+
+  anchor:
+    name: Smart Contracts (Anchor)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: package-lock.json
       - name: Install Solana CLI
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
@@ -35,16 +82,3 @@ jobs:
       - run: npm ci
       - run: anchor build
       - run: anchor test --skip-local-validator
-
-  dashboard:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: dashboard
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npm run build
