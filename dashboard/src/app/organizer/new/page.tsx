@@ -99,7 +99,7 @@ export default function NewHackathonPage() {
       toast.success("Hackathon created on-chain!", { id: chainToast });
       
       // 2. Register on Backend
-      const backendToast = toast.loading("Registering with JudgeChain metadata service...");
+      const backendToast = toast.loading("Registering with JudgeNod metadata service...");
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/hackathons`, {
           method: "POST",
