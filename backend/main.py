@@ -59,7 +59,21 @@ app.include_router(organizer_router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "JudgeChain Scoring Engine is running."}
+    return {"status": "ok", "message": "JudgeNod Scoring Engine is running."}
+
+# UX Redirects for Production Deployment
+from fastapi.responses import RedirectResponse
+
+@app.get("/deployment")
+@app.get("/docs/deploy")
+@app.get("/docs/deployment")
+def redirect_to_docs():
+    return RedirectResponse(url="https://hacknod.inmodel.in/docs/deployment")
+
+@app.get("/docs")
+@app.get("/docs/introduction")
+def redirect_to_intro():
+    return RedirectResponse(url="https://hacknod.inmodel.in/docs/introduction")
 
 @app.get("/health")
 @app.get("/h")

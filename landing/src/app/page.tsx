@@ -24,8 +24,8 @@ export default function LandingPage() {
           JudgeChain scores, verifies, and finalizes hackathon submissions natively on Solana. Zero human bias. Zero test gaming.
         </p>
         <div className="flex gap-4">
-          <a href="https://github.com/Inmodel-Labs/inmodel-c" target="_blank" rel="noopener noreferrer" className="bg-white text-black px-8 py-3 rounded-md font-bold hover:bg-zinc-200 transition shadow-[0_0_20px_rgba(255,255,255,0.3)]">Deploy JudgeNod</a>
-          <a href="https://hacknod.inmodel.in" className="bg-zinc-800 text-white px-8 py-3 rounded-md font-bold border border-zinc-700 hover:bg-zinc-700 transition">View Dashboard</a>
+          <a href="https://hacknod.inmodel.in/docs/deployment" className="bg-white text-black px-8 py-3 rounded-md font-bold hover:bg-zinc-200 transition shadow-[0_0_20px_rgba(255,255,255,0.3)]">Deploy JudgeNod</a>
+          <a href="https://hacknod.inmodel.in/dashboard" className="bg-zinc-800 text-white px-8 py-3 rounded-md font-bold border border-zinc-700 hover:bg-zinc-700 transition">View Dashboard</a>
         </div>
       </section>
 
