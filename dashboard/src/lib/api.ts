@@ -2,7 +2,22 @@ import { ScoreResult, ProblemMetadata } from "../types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
+const getHeaders = (extra: Record<string, string> = {}) => {
+  const headers: Record<string, string> = { ...extra };
+  if (typeof window !== "undefined") {
+    const adminKey = localStorage.getItem("admin_access_key");
+    if (adminKey) headers["x-admin-access"] = adminKey;
+    
+    // Auto-inject wallet headers if we have a way to track them globally?
+    // For now, these are usually passed explicitly but we'll prioritize the admin key.
+  }
+  return headers;
+};
+
 export const api = {
+  setAdminKey: (key: string) => localStorage.setItem("admin_access_key", key),
+  getAdminKey: () => typeof window !== "undefined" ? localStorage.getItem("admin_access_key") : null,
+  clearAdminKey: () => localStorage.removeItem("admin_access_key"),
   getProblems: (): Promise<Record<string, ProblemMetadata>> => 
     fetch(`${API_BASE}/problems`).then(r => {
       if (!r.ok) throw new Error("Failed to fetch problems");
@@ -15,9 +30,14 @@ export const api = {
       return r.json();
     }),
     
-  getSubmissions: (): Promise<ScoreResult[]> => 
-    fetch(`${API_BASE}/judge/submissions`).then(r => {
-      if (!r.ok) throw new Error("Failed to fetch submissions");
+  getSubmissions: (wallet?: string, signature?: string): Promise<ScoreResult[]> => 
+    fetch(`${API_BASE}/judge/submissions`, {
+      headers: getHeaders({
+        ...(wallet ? { "x-wallet": wallet } : {}),
+        ...(signature ? { "x-signature": signature } : {})
+      })
+    }).then(r => {
+      if (!r.ok) throw new Error("Unauthorized or server error");
       return r.json();
     }),
     
@@ -37,10 +57,13 @@ export const api = {
       return r.json();
     }),
     
-  submitJudgeScore: (payload: { submission_id: string; innovation: number; impact: number; presentation: number }): Promise<ScoreResult> =>
+  submitJudgeScore: (payload: { submission_id: string; innovation: number; impact: number; presentation: number; judge_wallet: string }, signature: string): Promise<ScoreResult> =>
     fetch(`${API_BASE}/judge/score`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getHeaders({ 
+        "Content-Type": "application/json",
+        "x-signature": signature
+      }),
       body: JSON.stringify(payload),
     }).then(async r => {
       if (!r.ok) {
@@ -75,4 +98,7 @@ export const api = {
     
   getHackathonWinners: (id: string): Promise<ScoreResult[]> => 
     fetch(`${API_BASE}/hackathon/${id}/winners`).then(r => r.json()),
+    
+  getOrganizerHackathons: <T>(wallet: string): Promise<T[]> =>
+    fetch(`${API_BASE}/hackathon/organizer/${wallet}`).then(r => r.json()),
 };

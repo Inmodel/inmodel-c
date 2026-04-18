@@ -5,13 +5,16 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { BentoCard } from "../../components/ui/BentoCard";
 import { toast } from "sonner";
+import { api } from "../../lib/api";
 
 type Hackathon = {
+  id: string; // The database 'id'
   name: string;
-  organizer: string;
-  pubkey: string;
+  organizer_wallet: string;
+  pubkey: string; 
   problems: unknown[];
 };
+
 
 export default function OrganizerDashboard() {
   const { publicKey } = useWallet();
@@ -20,10 +23,12 @@ export default function OrganizerDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!publicKey) return;
+    if (!publicKey) {
+      setTimeout(() => setLoading(false), 0);
+      return;
+    }
     
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/hackathons?organizer=${publicKey.toBase58()}`)
-      .then(res => res.json())
+    api.getOrganizerHackathons<Hackathon>(publicKey.toBase58())
       .then(setHackathons)
       .catch(() => toast.error("Failed to load your hackathons."))
       .finally(() => setLoading(false));
@@ -67,18 +72,18 @@ export default function OrganizerDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl xl:max-w-7xl mx-auto">
               {hackathons.map((h) => (
                 <BentoCard
-                  key={h.pubkey}
+                  key={h.id}
                   title={h.name}
                   subtitle={
                     <div className="flex flex-col gap-1">
-                      <span className="font-mono text-xs">ID: {h.pubkey.slice(0, 8)}...</span>
-                      <span>Active Challenges: {h.problems.length}</span>
+                      <span className="font-mono text-xs">ID: {h.pubkey ? h.pubkey.slice(0, 8) : h.id.slice(0,8)}...</span>
+                      <span>Active Challenges: {h.problems?.length || 0}</span>
                     </div>
                   }
                   tagText="ON-CHAIN HACKATHON"
                   icon="🌐"
                   actionText="Manage"
-                  onAction={() => router.push(`/organizer/${h.pubkey}`)}
+                  onAction={() => router.push(`/organizer/${h.pubkey || h.id}`)}
                 />
               ))}
             </div>

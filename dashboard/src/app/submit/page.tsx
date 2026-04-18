@@ -104,8 +104,27 @@ export default function SubmitPage() {
 
 
 
+  if (!publicKey) {
+    return (
+      <main className="flex flex-col items-center justify-center min-h-[70vh] p-8">
+        <div className="w-full max-w-lg bg-surface border border-amber-dim rounded-xl p-10 text-center shadow-[0_0_50px_rgba(240,165,0,0.1)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10 font-mono text-8xl pointer-events-none">401</div>
+          <div className="relative z-10">
+            <div className="text-amber-base font-display text-4xl mb-6 tracking-tighter uppercase font-black">Access Restricted</div>
+            <p className="text-text-secondary font-mono text-sm leading-relaxed mb-8">
+              The Developer Submission Hub requires cryptographic identity verification.
+              <br/>Please connect your Solana wallet to proceed.
+            </p>
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-dim to-transparent mb-8"></div>
+            <p className="text-[10px] text-muted uppercase tracking-[0.3em] font-data mb-6">Awaiting Connection</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 w-full max-w-7xl mx-auto items-start h-full h-min-screen">
+    <main className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 w-full max-w-7xl mx-auto items-start h-full h-min-screen animate-in fade-in zoom-in-95 duration-300">
       {/* 7col Left - Form */}
       <div className="col-span-1 md:col-span-7 bg-[var(--bg-surface)] border border-[var(--bg-border)] p-6 md:p-8 flex flex-col">
         <h1 className="text-xl font-mono text-white uppercase tracking-widest mb-8 border-b border-[var(--bg-border)] pb-4">Submit Execution</h1>

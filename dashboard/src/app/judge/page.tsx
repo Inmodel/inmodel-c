@@ -20,12 +20,19 @@ export default function JudgePage() {
   
   const [judgeInputs, setJudgeInputs] = useState<Record<string, { innovation: number; impact: number; presentation: number }>>({});
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
 
   const fetchSubmissions = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.getSubmissions();
+      // In JudgeNod, even with an admin key, we still want a wallet connected 
+      // for the identity of the judge.
+      const data = await api.getSubmissions(
+        publicKey?.toBase58(),
+        "list_submissions" // This is the fixed message the backend expects
+      );
       setSubmissions(data);
+      setIsUnauthorized(false);
       
       const inputs: Record<string, { innovation: number; impact: number; presentation: number }> = {};
       data.forEach(sub => {
@@ -36,11 +43,15 @@ export default function JudgePage() {
         setSelectedId(data[0].submission_id);
       }
     } catch (err: unknown) {
-      toast.error(`Error loading submissions: ${err instanceof Error ? err.message : String(err)}`);
+      if (String(err).includes("Unauthorized")) {
+        setIsUnauthorized(true);
+      } else {
+        toast.error(`Error loading submissions: ${err instanceof Error ? err.message : String(err)}`);
+      }
     } finally {
       setLoading(false);
     }
-  }, [selectedId]);
+  }, [selectedId, publicKey]);
 
   useEffect(() => {
     api.getProblems().then(setProblems).catch(() => {});
@@ -53,10 +64,17 @@ export default function JudgePage() {
     
     setIsSubmitting(submissionId);
     try {
-      const updated = await api.submitJudgeScore({
+      // We need to sign the score payload for the backend to verify the judge
+      const payload = {
         submission_id: submissionId,
+        judge_wallet: publicKey.toBase58(),
         ...inputs
-      });
+      };
+      
+      const updated = await api.submitJudgeScore(payload, "judge_score_signature_placeholder"); 
+      // Note: In real production, this would use a real signature from the wallet.
+      // For this "Command Center" improvement, the backend now bypasses the sig verification
+      // if the X-Admin-Access key is present.
       
       toast.success("Judge score recorded successfully!");
       setSubmissions(prev => prev.map(s => s.submission_id === submissionId ? { ...s, ...updated, judge_submitted: true } : s));
@@ -77,6 +95,36 @@ export default function JudgePage() {
 
   const selectedSub = submissions.find(s => s.submission_id === selectedId);
   const inputs = selectedId ? judgeInputs[selectedId] || { innovation: 0, impact: 0, presentation: 0 } : null;
+
+  if (isUnauthorized) {
+    return (
+      <main className="flex flex-col items-center justify-center min-h-[60vh] p-8">
+        <div className="w-full max-w-lg bg-surface border border-red-dim rounded-xl p-10 text-center shadow-[0_0_50px_rgba(239,68,68,0.1)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10 font-mono text-8xl pointer-events-none">403</div>
+          <div className="relative z-10">
+            <div className="text-red-base font-display text-4xl mb-6 tracking-tighter uppercase font-black">Access Denied</div>
+            <p className="text-text-secondary font-mono text-sm leading-relaxed mb-8">
+              Your wallet <span className="text-primary">{publicKey?.toBase58().slice(0,8)}...</span> is not authorized for the Judge Panel. 
+              <br/>This quadrant is restricted to designated personnel.
+            </p>
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-red-dim to-transparent mb-8"></div>
+            <p className="text-[10px] text-muted uppercase tracking-[0.3em] font-data mb-6">Authorize via Command Center</p>
+            <Button 
+               variant="primary" 
+               className="bg-amber-base text-void font-bold hover:scale-105 transition-transform px-8 h-12"
+               onClick={() => {
+                 // The trigger is in the sidebar, or we can just tell the user to use the sidebar.
+                 // But for ease of use, I'll recommend the sidebar 🔒.
+                 toast.info("Click the 🔓 icon in the sidebar to enter Admin Access Key.");
+               }}
+            >
+              Enter Access Code
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="content-area pt-8">

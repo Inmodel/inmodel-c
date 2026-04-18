@@ -3,8 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { StatCard } from "@/components/ui/StatCard";
 import { ScoreRing } from "@/components/ui/ScoreRing";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import Link from "next/link";
 
 export default function Home() {
+  const { publicKey } = useWallet();
   const [stats, setStats] = useState({ total: 0, active: 0, nfts: 0 });
 
   useEffect(() => {
@@ -31,7 +35,38 @@ export default function Home() {
   ];
 
   return (
-    <main className="p-6 w-full max-w-7xl mx-auto">
+    <main className="p-6 w-full max-w-7xl mx-auto flex flex-col gap-6">
+      
+      {/* Onboarding Gate */}
+      <div className="w-full bg-[var(--bg-surface)] border border-[var(--bg-border)] rounded-xl p-10 flex flex-col items-center justify-center text-center shadow-lg animate-fade-in slide-in-from-bottom-4 duration-500">
+        <h1 className="text-3xl font-display font-bold uppercase tracking-widest text-[var(--text-primary)] mb-4">
+          Welcome to JudgeNod
+        </h1>
+        <p className="text-[var(--text-secondary)] font-mono text-sm max-w-xl mx-auto mb-8">
+          The decentralized protocol for tamper-proof hackathon execution and soulbound certificate issuance.
+        </p>
+        
+        {!publicKey ? (
+          <div className="flex flex-col items-center gap-3">
+            <WalletMultiButton className="bg-[var(--amber-base)] hover:bg-[var(--amber-base)]/80 text-[var(--bg-void)] font-bold transition-all" />
+            <span className="text-[10px] text-[var(--text-muted)] font-data uppercase tracking-widest mt-2">
+              Connect wallet to initialize session
+            </span>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link 
+              href="/submit" 
+              className="px-6 py-3 border border-[var(--border)] hover:border-[var(--green-base)] bg-[var(--bg-elevated)] hover:bg-[var(--bg-elevated)]/50 text-[var(--text-primary)] transition-all font-data text-xs uppercase tracking-widest rounded"
+            >
+              🚀 Enter Developer Hub
+            </Link>
+          </div>
+        )}
+      </div>
+
+      <div className="h-px w-full bg-[var(--bg-border)] my-2"></div>
+
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-min">
         {/* Row 1 Stats */}
         <StatCard 

@@ -59,3 +59,9 @@ def get_hackathon_winners(hackathon_id: str, db: Session = Depends(get_db)):
     # Stub returning top 3 submissions as winners for the Certificates page
     rows = db.query(Submission).order_by(Submission.created_at.desc()).limit(3).all()
     return [db_store.to_dict(r) for r in rows]
+
+@router.get("/hackathon/organizer/{wallet_address}")
+def list_organizer_hackathons(wallet_address: str, db: Session = Depends(get_db)):
+    hackathons = db.query(Hackathon).filter(Hackathon.organizer_wallet == wallet_address).all()
+    return hackathons
+
