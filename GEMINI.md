@@ -1,6 +1,6 @@
-# JudgeChain: Gemini CLI Instructions
+# JudgeNod: Gemini CLI Instructions
 
-This file provides project-specific guidance for using Gemini with the **JudgeChain** multi-agent repository.
+This file provides project-specific guidance for using Gemini with the **JudgeNod** multi-agent repository.
 
 ## 🤖 Expert Personas
 
