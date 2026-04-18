@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-export const WalletDisplay = ({ address }: { address: string }) => {
+export const WalletDisplay = ({ address, truncated = true }: { address: string; truncated?: boolean }) => {
   const [copied, setCopied] = useState(false);
   
   const truncate = (str: string) => {
@@ -22,7 +22,7 @@ export const WalletDisplay = ({ address }: { address: string }) => {
       onClick={handleCopy}
       title={address}
     >
-      {truncate(address)} {copied && "✓"}
+      {truncated ? truncate(address) : address} {copied && "✓"}
     </span>
   );
 };
