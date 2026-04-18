@@ -61,3 +61,42 @@ async def get_repo_meta(owner: str, repo: str) -> dict:
     if r.status_code == 200:
         return r.json()
     return {}
+
+async def check_package_dependency(owner: str, repo: str, package: str) -> bool:
+    pkg = await get_file_content(owner, repo, "package.json")
+    if package in pkg: return True
+    cargo = await get_file_content(owner, repo, "Cargo.toml")
+    if package in cargo: return True
+    req = await get_file_content(owner, repo, "requirements.txt")
+    if package in req: return True
+    return False
+
+async def check_file_matching(owner: str, repo: str, pattern: str) -> bool:
+    contents = await get_repo_contents(owner, repo)
+    for item in contents:
+        if item.get("type") == "file" and re.search(pattern, item.get("name", ""), re.IGNORECASE):
+            return True
+    return False
+
+async def check_folder_exists(owner: str, repo: str, folder_name: str) -> bool:
+    contents = await get_repo_contents(owner, repo)
+    for item in contents:
+        if item.get("type") == "dir" and item.get("name", "") == folder_name:
+            return True
+    return False
+
+async def check_readme_contains(owner: str, repo: str, keyword: str) -> bool:
+    readme = await get_file_content(owner, repo, "README.md")
+    if not readme:
+        readme = await get_file_content(owner, repo, "readme.md")
+    return re.search(keyword, readme, re.IGNORECASE) is not None
+
+async def check_has_test_files(owner: str, repo: str) -> bool:
+    contents = await get_repo_contents(owner, repo)
+    for item in contents:
+        name = item.get("name", "").lower()
+        if item.get("type") == "dir" and name in ["tests", "test", "__tests__", "spec"]:
+            return True
+        if item.get("type") == "file" and ("test" in name or "spec" in name):
+            return True
+    return False
