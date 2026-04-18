@@ -99,6 +99,8 @@ inmodel-c/
 │   │   ├── app/        # /leaderboard (SSE enabled), /profile (History enabled)
 │   │   ├── components/ # BentoCard, Sidebar (OAuth), SolscanLink
 │   │   └── lib/        # useProgram hook, API client
+├── landing/            # Next.js 15 Marketing Landing Page
+│   ├── src/app/        # Animated interactive UI components & static info
 ├── programs/           # Solana smart contracts (Rust & Anchor)
 ├── tests/              # Anchor protocol and integration tests
 └── .agent/             # AI Developer Context files
@@ -113,9 +115,16 @@ inmodel-c/
 - [x] **Rate Limiting**: Integrated `slowapi` to protect mutation endpoints (10/min) and global routes.
 - [x] **Real-time Updates (SSE)**: Event-driven leaderboard updates via Server-Sent Events.
 - [x] **Fault Tolerance**: Scoring pipeline wrapped in safe execution blocks.
+- [x] **Database Migration**: Migrated from SQLite to robust PostgreSQL (`alembic`, `psycopg2`).
+- [x] **5-Layer Security**: Advanced path traversal, injection, and LLM-prompt gaming prevention actively hooked.
 - [x] **CLI Robustness**: Implemented `retryFetch()` in CLI to handle network drops.
 
+✅ **Marketing & Landing Platform (Phase 2)**
+- [x] Next.js 15 Tailwind UI showcasing interactive animations, soulbound NFTs, and on-chain metrics.
+- [x] Dynamic transaction ticker for realtime score visibility.
+
 ✅ **Backend Scoring Engine (FastAPI)**
+- [x] Dynamic Custom Validation Engine (`ProblemConfig`, `CriterionRule`).
 - [x] Static code analysis via modular analyzers.
 - [x] LLM-assisted code review (GitHub API based, no RCE).
 - [x] Dynamic certificate metadata generation (`/api/v1/metadata/{id}.json`).
@@ -124,6 +133,7 @@ inmodel-c/
 - [x] Cryptographic signature verification.
 
 ✅ **Web Dashboard (Next.js)**
+- [x] Custom Criteria Builder interface for Organizers.
 - [x] SSE-powered real-time updates for rankings.
 - [x] Submission history and certificate claiming panels.
 - [x] GitHub identity linking flow.
@@ -150,7 +160,8 @@ The smart contract is deployed on Solana Devnet with full NFT certificate suppor
 
 **Backend (`backend/.env`)**
 ```
-DATABASE_URL=sqlite:///./judgechain.db
+DATABASE_URL=postgresql://user:password@localhost/judgechain
+# OR fallback DATABASE_URL=sqlite:///./judgechain.db
 ANCHOR_PROVIDER_URL=https://api.devnet.solana.com
 ANCHOR_WALLET=~/.config/solana/id.json
 PROGRAM_ID=9vBoPV2ZzcbVPWGzJhA31SDYRZ3efwLZ2HH6BfBLvnm2
