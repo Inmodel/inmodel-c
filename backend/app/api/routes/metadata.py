@@ -25,7 +25,7 @@ def get_certificate_metadata(
     sys = sub["system_score"]
 
     return {
-        "name": f"JudgeChain Certificate #{submission_id[:8]}",
+        "name": f"JudgeNod Certificate #{submission_id[:8]}",
         "symbol": "JCERT",
         "description": (
             f"Soulbound certificate for hackathon submission {submission_id}. "
