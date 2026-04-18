@@ -1,5 +1,5 @@
 """
-JudgeChain Backend — Comprehensive API Test Suite
+JudgeNod Backend — Comprehensive API Test Suite
 Tests all endpoints: /score, /judge, /certificate, /leaderboard, /problems
 """
 
@@ -93,7 +93,7 @@ class TestHealthCheck:
         assert r.status_code == 200
         data = r.json()
         assert data["status"] == "ok"
-        assert "JudgeChain" in data["message"]
+        assert "JudgeNod" in data["message"]
 
 
 # ── Tests: POST /api/v1/score ─────────────────────────────────────────────────
