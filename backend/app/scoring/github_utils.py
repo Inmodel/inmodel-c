@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from app.utils.retry import with_retry
 
 GITHUB_HEADERS = {
-    "User-Agent": "JudgeChain-MVP",
+    "User-Agent": "JudgeNod",
     "Accept": "application/vnd.github.v3+json"
 }
 
