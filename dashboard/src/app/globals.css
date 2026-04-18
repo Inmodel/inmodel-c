@@ -30,42 +30,42 @@
 }
 
 :root {
-  /* BACKGROUNDS (Dark Default) */
-  --bg-void:       #080A0C;
-  --bg-base:       #0D1117;
-  --bg-surface:    #131920;
-  --bg-elevated:   #1A2332;
-  --bg-border:     #1E2D3D;
+  /* BACKGROUNDS (Luxe Umber / Stone Default) */
+  --bg-void:       #0c0a09; /* stone-950 */
+  --bg-base:       #1c1917; /* stone-900 */
+  --bg-surface:    #292524; /* stone-800 */
+  --bg-elevated:   #44403c; /* stone-700 (lifted for contrast) */
+  --bg-border:     rgba(120, 113, 108, 0.1); /* stone-border (updated to match landing repo) */
 
   /* AMBER (Common) */
-  --amber-dim:     #5C3D00;
-  --amber-muted:   #92610A;
-  --amber-base:    #F0A500;
-  --amber-bright:  #FFB800;
-  --amber-glow:    rgba(240, 165, 0, 0.15);
+  --amber-dim:     #b45309;
+  --amber-muted:   #d97706;
+  --amber-base:    #fbbf24;
+  --amber-bright:  #fcd34d;
+  --amber-glow:    rgba(251, 191, 36, 0.08);
 
   /* GREEN (Common) */
-  --green-dim:     #0A2A1A;
-  --green-muted:   #1A4A2A;
-  --green-base:    #00D68F;
-  --green-bright:  #00FF9F;
-  --green-glow:    rgba(0, 214, 143, 0.12);
+  --green-dim:     #064e3b;
+  --green-muted:   #047857;
+  --green-base:    #10b981;
+  --green-bright:  #34d399;
+  --green-glow:    rgba(16, 185, 129, 0.1);
 
   /* RED (Common) */
-  --red-dim:       #2A0A0A;
-  --red-base:      #FF4444;
-  --red-glow:      rgba(255, 68, 68, 0.12);
+  --red-dim:       #450a0a;
+  --red-base:      #ef4444;
+  --red-glow:      rgba(239, 68, 68, 0.12);
 
   /* BLUE / OTHERS (Common) */
   --sol-purple:    #9945FF;
   --sol-teal:      #14F195;
   --sol-gradient:  linear-gradient(135deg, #9945FF, #14F195);
 
-  /* TYPOGRAPHY COLORS (Dark Default) */
-  --text-primary:  #E8EDF2;
-  --text-secondary:#8C9DB5;
-  --text-muted:    #4A5568;
-  --text-disabled: #2D3748;
+  /* TYPOGRAPHY COLORS (Stone Default) */
+  --text-primary:  #fafaf9; /* stone-50 */
+  --text-secondary:#d6d3d1; /* stone-300 */
+  --text-muted:    #78716c; /* stone-500 */
+  --text-disabled: #57534e; /* stone-600 */
 
   /* TYPE SCALES */
   --text-xs:   0.625rem;
@@ -119,11 +119,6 @@ body {
   background-color: var(--bg-void);
   color: var(--text-primary);
   font-family: var(--font-body);
-  background-image:
-    linear-gradient(var(--bg-border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--bg-border) 1px, transparent 1px);
-  background-size: 40px 40px;
-  background-position: -1px -1px;
 }
 
 /* LAYOUT GRIDS */
@@ -145,6 +140,12 @@ body {
   margin: 0 auto;
   align-content: start;
 }
+
+/* Custom Scrollbar for Terminals/Lists */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .bento-stat    { grid-column: span 3; }
 .bento-feed    { grid-column: span 3; }
