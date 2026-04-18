@@ -1,6 +1,6 @@
 # Philosophy
 
-The **JudgeChain** development philosophy is rooted in the "100xDevs" mindset: practical, fast, and focused on user value.
+The **JudgeNod** development philosophy is rooted in the "100xDevs" mindset: practical, fast, and focused on user value.
 
 ### 1. Ship Fast, Iterate Later
 In a hackathon, a working demo is worth more than a perfect architecture. Get your core loop running on Devnet as quickly as possible.

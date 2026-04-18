@@ -31,10 +31,10 @@ The FastAPI backend runs the scoring engine and handles Solana transactions.
 
 ---
 
-## 🎨 2. Deploying the Dashboard (`inmodel-c/dashboard`)
-*Target Platform: Vercel*
+## 🎨 2. Deploying the Dashboard (hacknod-web repo)
+*Target Platform: Vercel | URL: https://hacknod.inmodel.in*
 
-The Next.js dashboard provides the visual interface.
+Note: The frontend dashboard is now managed in a separate repository. This section remains for historical reference or for new frontend instances.
 
 1. **Navigate & Login:**
    ```bash

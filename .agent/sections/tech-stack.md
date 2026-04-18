@@ -7,11 +7,11 @@ JudgeChain uses a modern, high-performance stack chosen for developer speed and 
 - **Framework:** Anchor (for account management, IDLs, and safety).
 - **Network:** Devnet for testing, Mainnet for shipping.
 
-### 2. Frontend: Next.js + TailwindCSS
+### 2. Frontend: Next.js + TailwindCSS (External Repo)
 - **Framework:** Next.js (App Router).
-- **Styling:** TailwindCSS (for rapid UI development).
-- **Wallet Integration:** @solana/wallet-adapter-react.
-- **State Management:** TanStack Query (for data fetching).
+- **Deployment:** Live at `https://hacknod.inmodel.in` (Vercel).
+- **Repository:** `hacknod-web` (Handle separately from this backend repo).
+- **Styling:** TailwindCSS.
 
 ### 3. Backend: FastAPI (Python)
 - **Framework:** FastAPI (for high-speed async APIs).

@@ -3,9 +3,9 @@
 JudgeChain is designed for low latency and tamper-proof verification.
 
 ### 1. Component Overview
-- **Next.js Dashboard:** The user's entry point for connecting their wallet and viewing scores.
-- **FastAPI Scoring Engine:** Asynchronously analyzes GitHub repositories and generates a "Project Score."
-- **Solana JudgeChain Program:** Stores the final, verified score on-chain as a "Judge Proof."
+- **Next.js Dashboard (External):** Live at `hacknod.inmodel.in`. Managed in a separate repository (`hacknod-web`).
+- **FastAPI Scoring Engine (This Repo):** Asynchronously analyzes GitHub repositories.
+- **Solana JudgeNod Program (This Repo):** Stores the final, verified score on-chain.
 - **CLI Submitter:** A tool for developers to push their local builds for judging.
 
 ### 2. Data Flow

@@ -10,15 +10,15 @@
 - **Status:** ✅ Deployed & Live
 - **Anchor Version:** 0.30.1
 
-### Backend API
+### Backend API (This Repository)
 - **Status:** ✅ Deployed & Live
-- **URL:** `https://judgechain-api.railway.app` (Assumed based on naming convention, update if different)
-- **Port:** 8000 (Internal)
-- **Database:** SQLite (Sync with PostgreSQL TODO)
+- **URL:** `https://judgechain-api.railway.app`
+- **Branding:** Transitioning from JudgeChain to **JudgeNod**
 ...
-### Dashboard
+### Dashboard (External Repository)
 - **Status:** ✅ Deployed & Live
-- **URL:** `https://judgechain-dashboard.vercel.app`
+- **URL:** `https://hacknod.inmodel.in`
+- **Host:** Vercel (hacknod-web repo)
 - **Framework:** Next.js 15
 - **Pages:** Home, Submit, Leaderboard, Judge, Organizer, Profile
 

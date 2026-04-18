@@ -1,6 +1,9 @@
-# JudgeChain
+# JudgeNod (formerly JudgeChain)
 
-**JudgeChain** is a tamper-proof hackathon infrastructure platform built on the Solana ecosystem. It is designed to facilitate fair, transparent, and auditable code evaluation for hackathons. By leveraging static analysis and on-chain records, JudgeChain ensures every submission is independently verifiable.
+**JudgeNod** is a tamper-proof hackathon infrastructure platform built on the Solana ecosystem. It is designed to facilitate fair, transparent, and auditable code evaluation for hackathons.
+
+**Live Dashboard:** [https://hacknod.inmodel.in](https://hacknod.inmodel.in) (External Repo)
+**Backend API:** [https://judgechain-api.railway.app](https://judgechain-api.railway.app) (This Repo)
 
 ---
 
