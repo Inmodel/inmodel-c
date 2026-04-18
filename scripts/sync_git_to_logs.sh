@@ -58,3 +58,9 @@ done <<< "$COMMITS"
 # Update state
 echo $CURRENT_HEAD > $STATE_FILE
 echo "Sync complete. Updated state to $CURRENT_HEAD."
+
+# Automate GitHub Issues (Component levels)
+if [ -f scripts/automate_issues.js ]; then
+  echo "Synchronizing component-specific issues..."
+  node scripts/automate_issues.js
+fi

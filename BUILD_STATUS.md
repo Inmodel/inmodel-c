@@ -177,10 +177,10 @@ judgenod certificate
 - [x] Improve certificate metadata generation (real JSON metadata served)
 
 ### Low Priority
-- [ ] Add dark mode toggle
-- [ ] Implement submission search/filter
-- [ ] Add analytics dashboard for organizers
-- [ ] Optimize Solana transaction fees
+- [ ] Add dark mode toggle (#11)
+- [ ] Implement submission search/filter (#12)
+- [ ] Add analytics dashboard for organizers (#13)
+- [ ] Optimize Solana transaction fees (#14)
 
 ---
 

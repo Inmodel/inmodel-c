@@ -13,7 +13,8 @@
     "dev": "concurrently --names \"dashboard,backend\" --prefix-colors \"yellow,cyan\" \"npm run dev --prefix dashboard\" \"cd backend && uvicorn main:app --reload\"",
     "build": "npm run build --prefix dashboard",
     "install:all": "npm install --prefix dashboard && npm install --prefix cli",
-    "test": "ANCHOR_PROVIDER_URL=http://localhost:8899 ANCHOR_WALLET=~/.config/solana/id.json npx tsx node_modules/.bin/mocha tests/**/*.ts"
+    "test": "ANCHOR_PROVIDER_URL=http://localhost:8899 ANCHOR_WALLET=~/.config/solana/id.json npx tsx node_modules/.bin/mocha tests/**/*.ts",
+    "sync:issues": "node scripts/automate_issues.js"
   },
   "repository": {
     "type": "git",
