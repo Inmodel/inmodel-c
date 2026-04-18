@@ -1,4 +1,4 @@
-# JudgeChain Build Status
+# JudgeNod Build Status
 
 **Last Updated:** 2026-04-15
 
@@ -13,8 +13,6 @@
 ### Backend API (This Repository)
 - **Status:** ✅ Deployed & Live
 - **URL:** `https://judgechain-api.railway.app`
-- **Branding:** Transitioning from JudgeChain to **JudgeNod**
-...
 ### Dashboard (External Repository)
 - **Status:** ✅ Deployed & Live
 - **URL:** `https://hacknod.inmodel.in`
