@@ -2,10 +2,28 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict
 
 
+class CriterionRule(BaseModel):
+    id: str
+    description: str
+    points: int
+    validator: str
+    params: Dict = {}
+
+
 class ProblemInput(BaseModel):
     id: str
     title: str
     description: str
+    custom_criteria: Optional[List[CriterionRule]] = []
+    max_custom_points: int = 10
+
+
+class ProblemConfig(BaseModel):
+    id: str
+    name: str
+    description: str
+    custom_criteria: List[CriterionRule] = []
+    max_custom_points: int = 10
 
 
 class HackathonInput(BaseModel):
