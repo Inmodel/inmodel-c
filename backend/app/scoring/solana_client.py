@@ -136,7 +136,7 @@ async def issue_certificate_on_chain(
 
         tx_sig = await program.rpc["issue_certificate"](
             metadata_uri,
-            f"JudgeChain Certificate #{submission_id[:8]}",
+            f"JudgeNod Certificate #{submission_id[:8]}",
             ctx={
                 "accounts": {
                     "payer": organizer_pubkey,
