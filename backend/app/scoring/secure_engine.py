@@ -40,6 +40,7 @@ class SecureScoringEngine:
     async def execute_scoring_pipeline(
         self,
         submission: SubmissionInput,
+        problem_config: Any = None,
         readme_content: str = "",
         code_files: Dict[str, str] = None,
         test_files: Dict[str, str] = None,
@@ -83,12 +84,14 @@ class SecureScoringEngine:
         if deployment_response is None:
             deployment_response = {}
         if raw_scores is None:
+            from app.scoring.engine import execute_scoring_pipeline as real_pipeline
+            system_score = await real_pipeline(submission, problem_config)
             raw_scores = {
-                "code_quality": 0,
-                "test_coverage": 0,
-                "deployment_health": 0,
-                "documentation": 0,
-                "custom_criteria": 0,
+                "code_quality": system_score.code_quality,
+                "test_coverage": system_score.test_coverage,
+                "deployment_health": system_score.deployment_health,
+                "documentation": system_score.documentation,
+                "custom_criteria": system_score.custom_criteria,
             }
         
         # Initialize security metadata
