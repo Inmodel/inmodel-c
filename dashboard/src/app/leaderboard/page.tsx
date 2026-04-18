@@ -1,11 +1,11 @@
-"use client";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { ScoreResult, ProblemMetadata } from "@/types";
 import { WalletDisplay } from "@/components/ui/WalletDisplay";
 import { DataTable } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/Badge";
+import { Search, Filter, RefreshCcw } from "lucide-react";
 
 export default function LeaderboardPage() {
   const [entries, setEntries] = useState<ScoreResult[]>([]);
@@ -13,6 +13,10 @@ export default function LeaderboardPage() {
   const [selectedProblem, setSelectedProblem] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [refreshCountdown, setRefreshCountdown] = useState(15);
+  
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "confirmed" | "pending">("all");
 
   useEffect(() => {
     api.getProblems()
@@ -43,6 +47,19 @@ export default function LeaderboardPage() {
     if (selectedProblem) fetchLeaderboard(selectedProblem);
   }, [selectedProblem, fetchLeaderboard]);
 
+  // Filtering Logic
+  const filteredEntries = useMemo(() => {
+    return entries.filter((entry) => {
+      const matchesSearch = entry.wallet.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus = 
+        statusFilter === "all" || 
+        (statusFilter === "confirmed" && entry.tx_hash) || 
+        (statusFilter === "pending" && !entry.tx_hash);
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [entries, searchQuery, statusFilter]);
+
   // SSE & Polling
   useEffect(() => {
     if (!selectedProblem) return;
@@ -63,7 +80,6 @@ export default function LeaderboardPage() {
       }, 1000);
     };
 
-    // Try EventSource for SSE
     const connectSSE = () => {
       const sseUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/events/leaderboard`;
       eventSource = new EventSource(sseUrl);
@@ -71,32 +87,23 @@ export default function LeaderboardPage() {
       eventSource.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
-          // If the event relates to a submission, we can refetch the leaderboard or patch local state
-          // For simplicity & safety during hackathon, we trigger a refetch of the leaderboard
           if (payload && payload.problem_id === selectedProblem) {
-             console.log("SSE update received", payload);
              fetchLeaderboard(selectedProblem);
           }
-        } catch (e) {
-          // ignore parsing error
-        }
+        } catch { }
       };
 
-      eventSource.onerror = (err) => {
-        console.warn("SSE connection error", err);
+      eventSource.onerror = () => {
         eventSource?.close();
         if (pollingInterval) clearInterval(pollingInterval);
-        startPolling(); // Fallback to polling
+        startPolling();
       };
 
       eventSource.onopen = () => {
-        // SSE is active, suspend polling if you like, or let polling continue but at a slower rate
         setRefreshCountdown(15);
       };
     };
 
-    // Both polling and SSE are enabled here. The polling serves as a fallback 
-    // mechanism, and SSE will trigger immediate refetches when updates occur.
     startPolling();
     connectSSE();
 
@@ -117,7 +124,10 @@ export default function LeaderboardPage() {
     <main className="content-area pt-8">
       <div className="bento-full flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <h1 className="text-xl font-display uppercase tracking-widest text-primary">Immutable Leaderboard</h1>
+          <div>
+            <h1 className="text-xl font-display uppercase tracking-widest text-primary">Immutable Leaderboard</h1>
+            <p className="text-xs text-muted font-data mt-1 uppercase tracking-wider">On-chain synchronized rankings</p>
+          </div>
           <div className="flex gap-2">
             {Object.entries(problems).map(([id, meta]) => (
               <button
@@ -133,13 +143,40 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        <div className="bg-surface border border-border rounded-lg p-6 min-h-[400px]">
-          <div className="flex justify-between items-center mb-6">
-             <div className="flex items-center gap-2 font-data text-xs uppercase tracking-widest text-muted">
-               <span className="chain-dot" /> Live Data Feed
+        <div className="bg-surface border border-border rounded-lg p-6 min-h-[400px] flex flex-col gap-6">
+          <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 border-b border-border/50 pb-6">
+             <div className="flex flex-col sm:flex-row items-center gap-4 flex-1">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted" />
+                  <input 
+                    type="text"
+                    placeholder="Search by wallet..."
+                    className="input-field pl-9 h-9"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                   <Filter className="h-3.5 w-3.5 text-muted" />
+                   <select 
+                     className="bg-elevated border border-border rounded px-3 h-9 text-xs font-data text-primary outline-none focus:border-amber-base transition-colors"
+                     value={statusFilter}
+                     onChange={(e) => setStatusFilter(e.target.value as "all" | "confirmed" | "pending")}
+                   >
+                     <option value="all">All Status</option>
+                     <option value="confirmed">Confirmed</option>
+                     <option value="pending">Pending</option>
+                   </select>
+                </div>
              </div>
-             <div className="font-data text-xs text-secondary">
-               ↻ Refreshing in {refreshCountdown}s
+
+             <div className="flex items-center gap-4">
+               <div className="flex items-center gap-2 font-data text-xs uppercase tracking-widest text-muted">
+                 <span className="chain-dot" /> Live Data Feed
+               </div>
+               <div className="flex items-center gap-1.5 font-data text-[10px] text-secondary bg-elevated/50 px-2 py-1 rounded border border-border/30">
+                 <RefreshCcw className="h-3 w-3 animate-spin-slow" /> {refreshCountdown}s
+               </div>
              </div>
           </div>
           
@@ -152,32 +189,38 @@ export default function LeaderboardPage() {
                </div>
             </div>
           ) : (
-            <DataTable columns={["Rank", "Participant", "Sys Score", "Judge Score", "Final", "Status"]}>
-              {entries.map((entry, i) => (
-                <tr key={entry.submission_id} className="stagger-item">
-                  <td className={`td-rank ${getRankClass(i)}`}>
-                    {(i+1).toString().padStart(2, '0')}
-                  </td>
-                  <td>
-                    <WalletDisplay address={entry.wallet} />
-                  </td>
-                  <td className="font-data text-sm text-right pr-4">{entry.system_score?.total || "0"}</td>
-                  <td className="font-data text-sm text-right pr-4">{entry.judge_score ?? "—"}</td>
-                  <td className="td-score text-lg font-bold text-right pr-4">
-                    {entry.final_score || entry.system_score?.total || 0}
-                  </td>
-                  <td>
-                    {entry.tx_hash ? (
-                      <Badge variant="confirmed">Confirmed</Badge>
-                    ) : (
-                      <Badge variant="pending">Pending</Badge>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {entries.length === 0 && (
+            <DataTable columns={["Rank", "Participant", "Sys", "Judge", "Final", "Status"]}>
+              {filteredEntries.map((entry) => {
+                const globalIndex = entries.findIndex(e => e.submission_id === entry.submission_id);
+                return (
+                  <tr key={entry.submission_id} className="stagger-item">
+                    <td className={`td-rank ${getRankClass(globalIndex)}`}>
+                      {(globalIndex + 1).toString().padStart(2, '0')}
+                    </td>
+                    <td>
+                      <WalletDisplay address={entry.wallet} truncated />
+                    </td>
+                    <td className="font-data text-sm text-right pr-4">{entry.system_score?.total || "0"}</td>
+                    <td className="font-data text-sm text-right pr-4">{entry.judge_score ?? "—"}</td>
+                    <td className="td-score text-lg font-bold text-right pr-4">
+                      {entry.final_score || entry.system_score?.total || 0}
+                    </td>
+                    <td>
+                      {entry.tx_hash ? (
+                        <Badge variant="confirmed">Live</Badge>
+                      ) : (
+                        <Badge variant="pending">Sync</Badge>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {filteredEntries.length === 0 && (
                 <tr>
-                   <td colSpan={6} className="text-center py-8 font-data text-xs text-muted uppercase">No entries found</td>
+                   <td colSpan={6} className="text-center py-20 bg-void/30 rounded-lg border border-dashed border-border/50">
+                     <p className="font-data text-xs text-muted uppercase tracking-widest mb-1">No matching results</p>
+                     <p className="text-[10px] text-disabled font-data uppercase">Try adjusting your search or filter</p>
+                   </td>
                 </tr>
               )}
             </DataTable>
