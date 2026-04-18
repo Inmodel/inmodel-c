@@ -11,7 +11,7 @@ from app.limiter import limiter
 import os
 
 AUTHORIZED_JUDGES = os.getenv("AUTHORIZED_JUDGES", "").split(",")
-ADMIN_ACCESS_KEY = os.getenv("ADMIN_ACCESS_KEY", "judge_gate_2026")
+ADMIN_ACCESS_KEY = os.getenv("ADMIN_ACCESS_KEY")
 
 router = APIRouter()
 
