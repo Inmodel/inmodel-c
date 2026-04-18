@@ -30,38 +30,38 @@
 }
 
 :root {
-  /* BACKGROUNDS */
+  /* BACKGROUNDS (Dark Default) */
   --bg-void:       #080A0C;
   --bg-base:       #0D1117;
   --bg-surface:    #131920;
   --bg-elevated:   #1A2332;
   --bg-border:     #1E2D3D;
 
-  /* AMBER */
+  /* AMBER (Common) */
   --amber-dim:     #5C3D00;
   --amber-muted:   #92610A;
   --amber-base:    #F0A500;
   --amber-bright:  #FFB800;
   --amber-glow:    rgba(240, 165, 0, 0.15);
 
-  /* GREEN */
+  /* GREEN (Common) */
   --green-dim:     #0A2A1A;
   --green-muted:   #1A4A2A;
   --green-base:    #00D68F;
   --green-bright:  #00FF9F;
   --green-glow:    rgba(0, 214, 143, 0.12);
 
-  /* RED */
+  /* RED (Common) */
   --red-dim:       #2A0A0A;
   --red-base:      #FF4444;
   --red-glow:      rgba(255, 68, 68, 0.12);
 
-  /* BLUE / OTHERS */
+  /* BLUE / OTHERS (Common) */
   --sol-purple:    #9945FF;
   --sol-teal:      #14F195;
   --sol-gradient:  linear-gradient(135deg, #9945FF, #14F195);
 
-  /* TYPOGRAPHY COLORS */
+  /* TYPOGRAPHY COLORS (Dark Default) */
   --text-primary:  #E8EDF2;
   --text-secondary:#8C9DB5;
   --text-muted:    #4A5568;
@@ -96,6 +96,23 @@
   --bp-lg:  1024px;
   --bp-xl:  1280px;
   --bp-2xl: 1536px;
+}
+
+[data-theme='light'], .light {
+  --bg-void:       #F9FAFB;
+  --bg-base:       #FFFFFF;
+  --bg-surface:    #F3F4F6;
+  --bg-elevated:   #E5E7EB;
+  --bg-border:     #D1D5DB;
+
+  --text-primary:  #111827;
+  --text-secondary:#4B5563;
+  --text-muted:    #6B7280;
+  --text-disabled: #9CA3AF;
+
+  --amber-glow:    rgba(240, 165, 0, 0.08);
+  --green-glow:    rgba(0, 214, 143, 0.08);
+  --red-glow:      rgba(255, 68, 68, 0.08);
 }
 
 body {
@@ -387,6 +404,26 @@ body {
   color: var(--amber-base);
 }
 
+.theme-toggle-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--bg-border);
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0 12px;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--amber-muted);
+  background: var(--amber-glow);
+}
+
 /* INPUTS */
 .input-label {
   font-family: var(--font-data);
@@ -624,6 +661,15 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 @keyframes dotPulse {
   0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
   40%           { transform: scale(1.0); opacity: 1.0; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
 }
 
 /* EXTRAS */
