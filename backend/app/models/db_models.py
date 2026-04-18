@@ -59,3 +59,20 @@ class SecurityAuditRecord(Base):
     raw_system_score = Column(Integer, nullable=False)  # before penalties
     final_system_score = Column(Integer, nullable=False)  # after penalties
     was_penalized = Column(Boolean, default=False)
+
+
+class Hackathon(Base):
+    """
+    Metadata for organized Hackathons.
+    """
+    __tablename__ = "hackathons"
+    
+    id = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    organizer_wallet = Column(String, nullable=False)
+    problems = Column(JSON)           # list of problem configs
+    scoring_weights = Column(JSON)    # custom weights
+    status = Column(String, default="active")  # active | finalized
+    created_at = Column(Integer)
+    finalized_at = Column(Integer, nullable=True)
+    on_chain_tx = Column(String, nullable=True)
