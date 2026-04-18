@@ -35,12 +35,27 @@ async def submit_and_score(
     if existing:
         return existing
 
+    from app.models.db_models import Hackathon
+    from app.models.schemas import ProblemConfig
+    
+    # Locate problem config from active hackathons
+    problem_config = None
+    hackathons = db.query(Hackathon).filter(Hackathon.status == "active").all()
+    for h in hackathons:
+        for p in h.problems:
+            if isinstance(p, dict) and p.get("id") == submission.problem_id:
+                problem_config = ProblemConfig(**p)
+                break
+        if problem_config:
+            break
+
     # Execute secure scoring pipeline
     try:
-        sys_score, security_metadata = await secure_engine.execute_scoring_pipeline(submission)
+        # Pass problem_config to pipeline
+        sys_score, security_metadata = await secure_engine.execute_scoring_pipeline(submission, problem_config=problem_config)
     except SecurityError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
+    
     resp = ScoreResponse(
         submission_id=str(uuid.uuid4()),
         problem_id=submission.problem_id,
