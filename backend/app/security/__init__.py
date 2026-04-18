@@ -1,5 +1,5 @@
 """
-Security module for JudgeChain anti-tampering layer.
+Security module for JudgeNod anti-tampering layer.
 
 This module provides a 5-layer defense-in-depth security architecture:
 - Layer 1: Input Validator (URL validation, size limits, encoded content detection)
