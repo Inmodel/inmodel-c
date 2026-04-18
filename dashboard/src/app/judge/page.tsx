@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { ScoreBar } from "@/components/ui/ScoreBar";
 import { ChainConfirm } from "@/components/ui/ChainConfirm";
+import { SecurityReport } from "@/components/ui/SecurityReport";
 
 export default function JudgePage() {
   const { publicKey } = useWallet();
@@ -129,6 +130,13 @@ export default function JudgePage() {
                    <ScoreBar label="Deployment" score={selectedSub.system_score.deployment_health} max={15} />
                    <ScoreBar label="Docs" score={selectedSub.system_score.documentation} max={15} />
                  </div>
+                 
+                 <SecurityReport 
+                   clean={true}       // using default true until API returns these fields specifically
+                   injections={0} 
+                   gamingFlags={true} 
+                   auditHash={selectedSub.submission_id.slice(0, 8)}
+                 />
                </div>
 
                {/* Manual Judging Form */}

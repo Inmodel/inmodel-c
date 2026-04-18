@@ -58,4 +58,21 @@ export const api = {
       }
       return r.json();
     }),
+  createHackathon: (body: object): Promise<{ id: string; on_chain_tx?: string; solscan_url?: string }> =>
+    fetch(`${API_BASE}/hackathon/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(r => r.json()),
+    
+  finalizeHackathon: (id: string): Promise<{ on_chain_tx?: string; solscan_url?: string; winners?: ScoreResult[] }> =>
+    fetch(`${API_BASE}/hackathon/${id}/finalize`, {
+      method: "POST"
+    }).then(r => r.json()),
+
+  getHackathonSubmissions: (id: string): Promise<ScoreResult[]> => 
+    fetch(`${API_BASE}/hackathon/${id}/submissions`).then(r => r.json()),
+    
+  getHackathonWinners: (id: string): Promise<ScoreResult[]> => 
+    fetch(`${API_BASE}/hackathon/${id}/winners`).then(r => r.json()),
 };
