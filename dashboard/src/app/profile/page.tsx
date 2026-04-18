@@ -42,7 +42,7 @@ export default function ProfilePage() {
 
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/v1/problems")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/problems`)
       .then(res => res.json())
       .then(setProblems)
       .catch(() => console.warn("Could not load problem titles."));
