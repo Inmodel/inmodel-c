@@ -4,7 +4,7 @@ const path = require('path');
 
 // Configuration
 const BUILD_STATUS_PATH = path.join(__dirname, '../BUILD_STATUS.md');
-const GH_PATH = '/opt/homebrew/bin/gh';
+const GH_PATH = 'gh';
 const COMPONENT_MAPPING = {
     'Smart Contract': '[Blockchain]',
     'Backend': '[Backend]',
