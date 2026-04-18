@@ -46,7 +46,7 @@ async def judge_score(
     x_admin_access: str = Header(None),
     db: Session = Depends(get_db),
 ):
-    is_authorized = (body.judge_wallet in AUTHORIZED_JUDGES) or (x_admin_access == ADMIN_ACCESS_KEY)
+    is_authorized = (body.judge_wallet in AUTHORIZED_JUDGES) or (ADMIN_ACCESS_KEY and x_admin_access == ADMIN_ACCESS_KEY)
     
     if not is_authorized:
         raise HTTPException(status_code=403, detail="Unauthorized judge")
