@@ -48,7 +48,8 @@ while read -r line; do
   echo "Posting log for $HASH..."
   
   # Post to GitHub
-  gh issue comment $AGENT_LOG_ISSUE_ID --body "$LOG_ENTRY"
+  GH_BIN=$(which gh || echo "/opt/homebrew/bin/gh")
+  $GH_BIN issue comment $AGENT_LOG_ISSUE_ID --body "$LOG_ENTRY"
   
   # Append to local log
   echo -e "\n$LOG_ENTRY\n" >> SESSION_LOG.md
