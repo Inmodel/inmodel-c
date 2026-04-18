@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from fastapi import HTTPException
-from app.models.schemas import SubmissionInput, SystemScore
+from app.models.schemas import SubmissionInput, SystemScore, ProblemConfig
 from app.scoring.github_utils import parse_github_repo, assert_repo_accessible
 from app.scoring.analyzers.code_quality import score_code_quality
 from app.scoring.analyzers.test_coverage import score_test_coverage
@@ -20,8 +20,7 @@ async def _safe_run(name: str, coro) -> int:
         logger.error(f"[SCORING] Analyzer '{name}' failed: {e}. Awarding 0 points.")
         return 0
 
-
-async def execute_scoring_pipeline(submission: SubmissionInput) -> SystemScore:
+async def execute_scoring_pipeline(submission: SubmissionInput, problem_config: ProblemConfig = None) -> SystemScore:
     owner, repo = parse_github_repo(submission.repo_url)
 
     try:
@@ -32,13 +31,23 @@ async def execute_scoring_pipeline(submission: SubmissionInput) -> SystemScore:
         logger.error(f"[SCORING] GitHub accessibility check failed: {e}")
         raise HTTPException(status_code=502, detail=f"Cannot reach GitHub: {e}")
 
+    # Fallback if problem_config is not provided
+    if problem_config is None:
+        problem_config = ProblemConfig(
+            id=submission.problem_id,
+            name="Fallback Config",
+            description="",
+            custom_criteria=[],
+            max_custom_points=10
+        )
+
     # Run analyzers concurrently — each one is individually fault-tolerant
     pts_deployment, pts_docs, pts_tests, pts_code, pts_custom = await asyncio.gather(
         _safe_run("deployment_health", score_deployment_health(submission.deployment_url)),
         _safe_run("documentation", score_documentation(owner, repo)),
         _safe_run("test_coverage", score_test_coverage(owner, repo, submission.reported_test_coverage_percent)),
         _safe_run("code_quality", score_code_quality(owner, repo, submission.reported_linting_score)),
-        _safe_run("custom_criteria", score_custom_criteria(submission.repo_url, submission.problem_id)),
+        _safe_run("custom_criteria", score_custom_criteria(submission.repo_url, problem_config)),
     )
 
     total = min(pts_deployment + pts_docs + pts_tests + pts_code + pts_custom, 70)
