@@ -93,6 +93,6 @@ The standalone Solana marketing/landing page.
 ---
 
 ### 🎉 Post-Deployment Checklist
-- [ ] Run `npx judgenod submit` locally to verify it hits the production backend.
-- [ ] Test navigating to the Vercel URLs for the Dashboard and Landing Page.
-- [ ] Connect your Phantom wallet on the dashboard and ensure no CORS errors appear in your browser console.
+- [x] Run `npx judgenod submit` locally to verify it hits the production backend.
+- [x] Test navigating to the Vercel URLs for the Dashboard and Landing Page.
+- [x] Connect your Phantom wallet on the dashboard and ensure no CORS errors appear in your browser console.

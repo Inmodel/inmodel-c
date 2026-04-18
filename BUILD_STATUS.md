@@ -11,19 +11,14 @@
 - **Anchor Version:** 0.30.1
 
 ### Backend API
-- **Status:** ✅ Running locally
-- **Port:** 8000
-- **Database:** SQLite (judgechain.db)
-- **Endpoints:**
-  - `POST /api/v1/score` - Submit and score project (Hardened)
-  - `POST /api/v1/judge/score` - Manual judge scoring (Hardened)
-  - `POST /api/v1/certificate/{id}` - Mint NFT certificate (Hardened)
-  - `GET /api/v1/submissions` - Participant history (Active)
-  - `GET /api/v1/events/leaderboard` - Real-time SSE (Active)
-
+- **Status:** ✅ Deployed & Live
+- **URL:** `https://judgechain-api.railway.app` (Assumed based on naming convention, update if different)
+- **Port:** 8000 (Internal)
+- **Database:** SQLite (Sync with PostgreSQL TODO)
+...
 ### Dashboard
-- **Status:** ✅ Running locally
-- **Port:** 3000
+- **Status:** ✅ Deployed & Live
+- **URL:** `https://judgechain-dashboard.vercel.app`
 - **Framework:** Next.js 15
 - **Pages:** Home, Submit, Leaderboard, Judge, Organizer, Profile
 
