@@ -18,7 +18,7 @@ export function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        JudgeChain
+        JudgeNod
         <small>v1.0.0-rc.1</small>
       </div>
       <nav>
