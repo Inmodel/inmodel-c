@@ -1,6 +1,6 @@
 # 🚀 Production Deployment Guide
 
-This guide details the exact steps to deploy both your **JudgeChain** (`inmodel-c`) services and the **landing-page-solana** repository.
+This guide details the exact steps to deploy both your **JudgeNod** (`inmodel-c`) services and the **landing-page-solana** repository.
 
 ---
 
