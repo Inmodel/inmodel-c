@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.limiter import limiter
-from app.api.routes import score, judge
+from app.api.routes import score, judge, problems
 from app.api.routes.certificate import router as certificate_router
 from app.api.routes.events import router as events_router
 from app.api.routes.submissions import router as submissions_router
@@ -48,6 +48,7 @@ app.add_middleware(
 
 app.include_router(score.router, prefix="/api/v1")
 app.include_router(judge.router, prefix="/api/v1")
+app.include_router(problems.router, prefix="/api/v1")
 app.include_router(certificate_router, prefix="/api/v1")
 app.include_router(events_router, prefix="/api/v1")
 app.include_router(submissions_router, prefix="/api/v1")
@@ -61,6 +62,7 @@ def read_root():
     return {"status": "ok", "message": "JudgeChain Scoring Engine is running."}
 
 @app.get("/health")
+@app.get("/h")
 def health():
     return {
         "status": "ok",
