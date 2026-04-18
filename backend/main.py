@@ -13,6 +13,7 @@ from app.api.routes.submissions import router as submissions_router
 from app.api.routes.metadata import router as metadata_router
 from app.api.routes.github_auth import router as github_auth_router
 from app.api.routes.organizer import router as organizer_router
+from app.api.routes.user import router as user_router
 from app.database import init_db
 from app.security import setup_security_logger
 
@@ -55,6 +56,7 @@ app.include_router(submissions_router, prefix="/api/v1")
 app.include_router(metadata_router, prefix="/api/v1")
 app.include_router(github_auth_router, prefix="/api/v1")
 app.include_router(organizer_router, prefix="/api/v1")
+app.include_router(user_router, prefix="/api/v1")
 
 
 @app.get("/")

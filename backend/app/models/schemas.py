@@ -82,3 +82,18 @@ class JudgeScoreInput(BaseModel):
     impact: float = Field(..., ge=0, le=10)
     presentation: float = Field(..., ge=0, le=10)
     judge_wallet: str
+
+
+class UserProfileSchema(BaseModel):
+    uid: str
+    email: str
+    wallet_address: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UserProfileUpdate(BaseModel):
+    uid: str
+    email: str
+    wallet_address: str

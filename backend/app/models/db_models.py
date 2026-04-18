@@ -29,6 +29,19 @@ class Submission(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class UserProfile(Base):
+    """
+    Bridge between authenticated dashboard user and their Solana wallet.
+    """
+    __tablename__ = "user_profiles"
+
+    uid = Column(String, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    wallet_address = Column(String, index=True, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
 class SecurityAuditRecord(Base):
     """
     Security audit trail for all submissions.
