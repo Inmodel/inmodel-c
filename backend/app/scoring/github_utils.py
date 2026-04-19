@@ -72,9 +72,11 @@ async def check_package_dependency(owner: str, repo: str, package: str) -> bool:
     return False
 
 async def check_file_matching(owner: str, repo: str, pattern: str) -> bool:
+    import re
     contents = await get_repo_contents(owner, repo)
     for item in contents:
         if item.get("type") == "file" and re.search(pattern, item.get("name", ""), re.IGNORECASE):
+
             return True
     return False
 
