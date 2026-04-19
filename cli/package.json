@@ -1,5 +1,5 @@
 {
-  "name": "@Inmodel/hacknod",
+  "name": "@inmodel/hacknod",
   "version": "1.0.0",
   "description": "CLI to submit Hackathon projects to HackNod on Solana",
   "main": "dist/index.js",

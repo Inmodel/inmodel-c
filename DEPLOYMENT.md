@@ -55,7 +55,7 @@ Note: The frontend dashboard is now managed in a separate repository. This secti
 ## 🛠️ 3. Publishing the CLI Tool (`inmodel-c/cli`)
 *Target Platform: GitHub Packages*
 
-Publishing the CLI allows participants to run `npx @Inmodel/hacknod submit`.
+Publishing the CLI allows participants to run `npx @inmodel/hacknod submit`.
 
 1. **Navigate to the CLI Directory:**
    ```bash
@@ -93,6 +93,6 @@ The standalone Solana marketing/landing page.
 ---
 
 ### 🎉 Post-Deployment Checklist
-- [x] Run `npx @Inmodel/hacknod submit` locally to verify it hits the production backend.
+- [x] Run `npx @inmodel/hacknod submit` locally to verify it hits the production backend.
 - [x] Test navigating to the Vercel URLs for the Dashboard and Landing Page.
 - [x] Connect your Phantom wallet on the dashboard and ensure no CORS errors appear in your browser console.

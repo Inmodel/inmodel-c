@@ -11,7 +11,7 @@
 
 The platform uses a decoupled architecture designed for security, transparency, and scalability, consisting of four main components:
 
-1. **CLI Tool (`/cli`)**: A Node.js CLI used by participants to package and submit their projects seamlessly. Features interactive prompts, project persistence, and certificate minting. Run via `npx @Inmodel/hacknod`.
+1. **CLI Tool (`/cli`)**: A Node.js CLI used by participants to package and submit their projects seamlessly. Features interactive prompts, project persistence, and certificate minting. Run via `npx @inmodel/hacknod`.
 2. **Backend Scoring Engine (`/backend`)**: A highly-secure Python/FastAPI service that receives submissions, evaluates them using static analysis (avoiding RCE vulnerabilities), calculates technical scores, and integrates LLM-powered code review.
 3. **Smart Contracts (`/programs/judgechain`)**: Rust-based Anchor smart contracts deployed on Solana Devnet. These contracts immutably record the final evaluation scores, maintain the hackathon leaderboard, and issue soulbound NFT certificates via Metaplex Core.
 4. **Web Dashboard (`/dashboard`)**: A Next.js frontend where participants and organizers can visually track submissions, view score breakdowns, verify on-chain records, and manage hackathons.
@@ -51,7 +51,7 @@ sequenceDiagram
     participant Chain as Solana (Anchor)
     participant Dash as Dashboard (Next.js)
     
-    User->>CLI: run `npx @Inmodel/hacknod submit ./project`
+    User->>CLI: run `npx @inmodel/hacknod submit ./project`
     activate CLI
     CLI->>CLI: Package code & metadata
     CLI->>Backend: HTTP POST /api/v1/score

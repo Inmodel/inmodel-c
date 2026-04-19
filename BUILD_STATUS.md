@@ -22,7 +22,7 @@
 
 ### CLI Tool
 - **Status:** ✅ Functional
-- **Package:** `@Inmodel/hacknod`
+- **Package:** `@inmodel/hacknod`
 - **Commands:** submit, leaderboard, certificate
 
 ---
