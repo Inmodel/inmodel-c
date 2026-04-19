@@ -1,10 +1,10 @@
 {
-  "name": "judgenod",
+  "name": "@Inmodel/hacknod",
   "version": "1.0.0",
-  "description": "CLI to submit Hackathon projects to JudgeNod on Solana",
+  "description": "CLI to submit Hackathon projects to HackNod on Solana",
   "main": "dist/index.js",
   "bin": {
-    "judgenod": "./dist/index.js"
+    "hacknod": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -18,7 +18,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/NitishKumar-ai/judgechain"
+    "url": "https://github.com/Inmodel/inmodel-c.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "files": [
     "dist/",

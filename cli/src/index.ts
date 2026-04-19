@@ -228,8 +228,8 @@ async function runSubmit(
 // ── CLI setup ─────────────────────────────────────────────────────────────────
 
 program
-  .name('judgenod')
-  .description('CLI to submit Hackathon projects to JudgeNod on Solana')
+  .name('hacknod')
+  .description('CLI to submit Hackathon projects to HackNod on Solana')
   .version('1.0.0');
 
 // ── submit ────────────────────────────────────────────────────────────────────
@@ -245,7 +245,7 @@ program.command('submit')
   .option('-n, --network <name>',     'devnet | mainnet | localnet', 'devnet')
   .option('--json',                   'Output raw JSON (for CI/scripting)')
   .action(async (options: { problem?: string; repo?: string; deployment?: string; coverage?: string; lint?: string; keypair?: string; network: Network; json?: boolean }) => {
-    if (!options.json) p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Submission Tool')}`);
+    if (!options.json) p.intro(`${chalk.bgCyan.black(' HackNod ')} ${chalk.dim('Submission Tool')}`);
 
     const config = loadConfig();
     const finalOptions: SubmitOptions = {
@@ -286,7 +286,7 @@ program.command('status')
   .requiredOption('-t, --tx <hash>', 'Transaction signature hash')
   .option('-n, --network <name>', 'devnet | mainnet | localnet', 'devnet')
   .action(async (options: { tx: string; network: Network }) => {
-    p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Transaction Status')}`);
+    p.intro(`${chalk.bgCyan.black(' HackNod ')} ${chalk.dim('Transaction Status')}`);
     const connection = getConnection(options.network);
     const s = p.spinner();
     s.start(`Fetching tx on ${options.network}`);
@@ -324,7 +324,7 @@ program.command('leaderboard')
   .option('-p, --problem <id>', 'Problem statement ID')
   .option('--json',             'Output raw JSON')
   .action(async (options: { problem?: string; json?: boolean }) => {
-    if (!options.json) p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Leaderboard')}`);
+    if (!options.json) p.intro(`${chalk.bgCyan.black(' HackNod ')} ${chalk.dim('Leaderboard')}`);
     let problemId: string | undefined = options.problem;
 
     if (!problemId) {
@@ -394,7 +394,7 @@ program.command('init')
   .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
   .option('-n, --network <name>', 'devnet | mainnet | localnet', 'devnet')
   .action(async (options: { keypair?: string; network: string }) => {
-    p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Interactive Submission')}`);
+    p.intro(`${chalk.bgCyan.black(' HackNod ')} ${chalk.dim('Interactive Submission')}`);
 
     const existingConfig = loadConfig();
     const gitOrigin = getGitOriginUrl();
@@ -471,7 +471,7 @@ program.command('init')
               `Metadata URI: ${certData.metadata_uri}\n` +
               `TX: ${certData.tx_sig}\n` +
               `Solscan: https://solscan.io/tx/${certData.tx_sig}?cluster=${options.network}`,
-              { padding: 1, borderColor: 'yellow', title: 'JudgeNod Certificate' }
+              { padding: 1, borderColor: 'yellow', title: 'HackNod Certificate' }
             ));
           } catch (err) {
             s2.stop('Mint failed');
@@ -481,7 +481,7 @@ program.command('init')
           p.log.warn(`Score must be >= 50 to mint. Current: ${score}`);
         }
       } else if (!p.isCancel(mintNow) && !mintNow) {
-        p.log.info(`Run ${chalk.cyan(`judgenod certificate --submission-id ${result.submission_id}`)} later to mint`);
+        p.log.info(`Run ${chalk.cyan(`hacknod certificate --submission-id ${result.submission_id}`)} later to mint`);
       }
     }
   });
@@ -493,7 +493,7 @@ program.command('whoami')
   .option('-k, --keypair <path>', 'Path to Solana keypair JSON')
   .option('-n, --network <name>', 'devnet | mainnet | localnet', 'devnet')
   .action(async (options: { keypair?: string; network: string }) => {
-    p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Wallet Info')}`);
+    p.intro(`${chalk.bgCyan.black(' HackNod ')} ${chalk.dim('Wallet Info')}`);
     const keypair    = loadKeypair(options.keypair);
     const wallet     = keypair.publicKey.toBase58();
     const connection = getConnection(options.network);
@@ -522,7 +522,7 @@ program.command('score')
   .requiredOption('-s, --submission <id>', 'Submission ID')
   .option('--json', 'Output raw JSON')
   .action(async (options: { submission: string; json?: boolean }) => {
-    if (!options.json) p.intro(`${chalk.bgCyan.black(' JudgeNod ')} ${chalk.dim('Submission Lookup')}`);
+    if (!options.json) p.intro(`${chalk.bgCyan.black(' HackNod ')} ${chalk.dim('Submission Lookup')}`);
     const sp = p.spinner();
     if (!options.json) sp.start('Fetching submission...');
     try {
@@ -580,7 +580,7 @@ program
           `Metadata URI: ${data.metadata_uri}\n` +
           `TX: ${data.tx_sig}\n` +
           `Solscan: https://solscan.io/tx/${data.tx_sig}?cluster=${options.network}`,
-          { padding: 1, borderColor: 'yellow', title: 'JudgeNod Certificate' }
+          { padding: 1, borderColor: 'yellow', title: 'HackNod Certificate' }
         )
       );
     } catch (err) {

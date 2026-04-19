@@ -22,7 +22,7 @@
 
 ### CLI Tool
 - **Status:** ✅ Functional
-- **Package:** `judgechain`
+- **Package:** `@Inmodel/hacknod`
 - **Commands:** submit, leaderboard, certificate
 
 ---
@@ -150,9 +150,9 @@ npm run dev
 cd cli
 npm install
 npm link
-judgenod submit
-judgenod leaderboard
-judgenod certificate
+hacknod submit
+hacknod leaderboard
+hacknod certificate
 ```
 
 ---

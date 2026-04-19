@@ -72,7 +72,7 @@ JudgeChain uses a modern, high-performance stack chosen for developer speed and 
 ### 2. Frontend: Next.js + TailwindCSS (External Repo)
 - **Framework:** Next.js (App Router).
 - **Deployment:** Live at `https://hacknod.inmodel.in` (Vercel).
-- **Repository:** `hacknod-web` (Handle separately from this backend repo).
+- **CLI:** Available as `@Inmodel/hacknod` on GitHub Packages.
 - **Styling:** TailwindCSS.
 
 ### 3. Backend: FastAPI (Python)

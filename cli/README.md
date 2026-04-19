@@ -1,19 +1,15 @@
-# judgenod CLI
+# hacknod CLI
 
-Submit and track hackathon projects on JudgeChain (Solana).
+Submit and track hackathon projects on HackNod (Solana).
 
 ## Install
 
 ```bash
-cd cli && npm install && npm run build
-# then use via:
-node dist/index.js <command>
-# or link globally:
-npm link
-```
+# Install via GitHub Packages
+npm install -g @Inmodel/hacknod
 
-```bash
-export JUDGECHAIN_API_URL=https://api.judgechain.xyz/api/v1
+# Or run directly via npx
+npx @Inmodel/hacknod <command>
 ```
 
 ---
@@ -23,7 +19,7 @@ export JUDGECHAIN_API_URL=https://api.judgechain.xyz/api/v1
 The CLI now handles intermittent network instability gracefully.
 
 ### 🔄 Automatic Retries
-All requests to the JudgeChain backend are wrapped in a `retryFetch` wrapper. This implements:
+All requests to the HackNod backend are wrapped in a `retryFetch` wrapper. This implements:
 - **3 Attempt Limit**: To avoid infinite loops while ensuring a fair chance at delivery.
 - **Exponential Backoff**: (1s → 2s → 4s) to allow short network blips or backend restarts to resolve.
 - **Targeted Failures**: Retries on `ECONNREFUSED`, `ETIMEDOUT`, and non-rate-limited 500 errors.
@@ -35,7 +31,7 @@ All requests to the JudgeChain backend are wrapped in a `retryFetch` wrapper. Th
 ### `submit` — Submit a project
 
 ```bash
-judgenod submit \
+hacknod submit \
   --problem <id> \
   --repo https://github.com/user/repo \
   --deployment https://myapp.vercel.app \
@@ -61,7 +57,7 @@ judgenod submit \
 ### `status` — Check on-chain transaction
 
 ```bash
-judgenod status --tx <signature> --network devnet
+hacknod status --tx <signature> --network devnet
 ```
 
 | Flag | Description |
@@ -75,10 +71,10 @@ judgenod status --tx <signature> --network devnet
 
 ```bash
 # Interactive problem selector:
-judgenod leaderboard
+hacknod leaderboard
 
 # Direct:
-judgenod leaderboard --problem problem-1 --json
+hacknod leaderboard --problem problem-1 --json
 ```
 
 | Flag | Description |
@@ -91,10 +87,10 @@ judgenod leaderboard --problem problem-1 --json
 ### `init` — Interactive guided submission TUI
 
 ```bash
-judgenod init --network devnet
+hacknod init --network devnet
 ```
 
-Walks through all submission fields interactively, saves config to `.judgenod.json`, submits, then offers to mint your certificate immediately.
+Walks through all submission fields interactively, saves config to `.hacknod.json`, submits, then offers to mint your certificate immediately.
 
 | Flag | Description |
 |---|---|
@@ -106,7 +102,7 @@ Walks through all submission fields interactively, saves config to `.judgenod.js
 ### `certificate` — Mint soulbound NFT certificate
 
 ```bash
-judgenod certificate --submission-id <id> --network devnet
+hacknod certificate --submission-id <id> --network devnet
 ```
 
 Mints a soulbound NFT certificate on-chain for a qualifying submission (final score ≥ 50).

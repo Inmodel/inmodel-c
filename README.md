@@ -1,9 +1,9 @@
-# JudgeNod (formerly JudgeChain)
+# HackNod (formerly JudgeChain)
 
-**JudgeNod** is a tamper-proof hackathon infrastructure platform built on the Solana ecosystem. It is designed to facilitate fair, transparent, and auditable code evaluation for hackathons.
+**HackNod** is a tamper-proof hackathon infrastructure platform built on the Solana ecosystem. It is designed to facilitate fair, transparent, and auditable code evaluation for hackathons.
 
 **Live Dashboard:** [https://hacknod.inmodel.in](https://hacknod.inmodel.in) (External Repo)
-**Backend API:** [https://judgechain-api.railway.app](https://judgechain-api.railway.app) (This Repo)
+**Backend API:** [https://hacknod-api.railway.app](https://hacknod-api.railway.app) (This Repo)
 
 ---
 
@@ -11,7 +11,7 @@
 
 The platform uses a decoupled architecture designed for security, transparency, and scalability, consisting of four main components:
 
-1. **CLI Tool (`/cli`)**: A Node.js CLI used by participants to package and submit their projects seamlessly. Features interactive prompts, project persistence, and certificate minting.
+1. **CLI Tool (`/cli`)**: A Node.js CLI used by participants to package and submit their projects seamlessly. Features interactive prompts, project persistence, and certificate minting. Run via `npx @Inmodel/hacknod`.
 2. **Backend Scoring Engine (`/backend`)**: A highly-secure Python/FastAPI service that receives submissions, evaluates them using static analysis (avoiding RCE vulnerabilities), calculates technical scores, and integrates LLM-powered code review.
 3. **Smart Contracts (`/programs/judgechain`)**: Rust-based Anchor smart contracts deployed on Solana Devnet. These contracts immutably record the final evaluation scores, maintain the hackathon leaderboard, and issue soulbound NFT certificates via Metaplex Core.
 4. **Web Dashboard (`/dashboard`)**: A Next.js frontend where participants and organizers can visually track submissions, view score breakdowns, verify on-chain records, and manage hackathons.
@@ -51,7 +51,7 @@ sequenceDiagram
     participant Chain as Solana (Anchor)
     participant Dash as Dashboard (Next.js)
     
-    User->>CLI: run `judgenod submit ./project`
+    User->>CLI: run `npx @Inmodel/hacknod submit ./project`
     activate CLI
     CLI->>CLI: Package code & metadata
     CLI->>Backend: HTTP POST /api/v1/score
@@ -205,16 +205,16 @@ npm run dev
 ```bash
 cd cli
 npm install
-npm link  # Makes 'judgenod' command available globally
+npm link  # Makes 'hacknod' command available globally
 
 # Submit a project
-judgenod submit
+hacknod submit
 
 # View leaderboard
-judgenod leaderboard
+hacknod leaderboard
 
 # Mint certificate
-judgenod certificate
+hacknod certificate
 ```
 
 ### API Endpoints

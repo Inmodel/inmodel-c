@@ -1,6 +1,6 @@
 # 🚀 Production Deployment Guide
 
-This guide details the exact steps to deploy both your **JudgeNod** (`inmodel-c`) services and the **landing-page-solana** repository.
+This guide details the exact steps to deploy both your **HackNod** (`inmodel-c`) services and the **landing-page-solana** repository.
 
 ---
 
@@ -53,9 +53,9 @@ Note: The frontend dashboard is now managed in a separate repository. This secti
 ---
 
 ## 🛠️ 3. Publishing the CLI Tool (`inmodel-c/cli`)
-*Target Platform: NPM Registry*
+*Target Platform: GitHub Packages*
 
-Publishing the CLI allows participants to run `npx judgenod submit`.
+Publishing the CLI allows participants to run `npx @Inmodel/hacknod submit`.
 
 1. **Navigate to the CLI Directory:**
    ```bash
@@ -67,7 +67,7 @@ Publishing the CLI allows participants to run `npx judgenod submit`.
 3. **Build & Publish:**
    ```bash
    npm run build
-   npm login
+   # Ensure you are logged in to GitHub Packages
    npm publish
    ```
 
@@ -93,6 +93,6 @@ The standalone Solana marketing/landing page.
 ---
 
 ### 🎉 Post-Deployment Checklist
-- [x] Run `npx judgenod submit` locally to verify it hits the production backend.
+- [x] Run `npx @Inmodel/hacknod submit` locally to verify it hits the production backend.
 - [x] Test navigating to the Vercel URLs for the Dashboard and Landing Page.
 - [x] Connect your Phantom wallet on the dashboard and ensure no CORS errors appear in your browser console.
