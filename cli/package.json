@@ -1,6 +1,6 @@
 {
   "name": "@inmodel/hacknod",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CLI to submit Hackathon projects to HackNod on Solana",
   "main": "dist/index.js",
   "bin": {
