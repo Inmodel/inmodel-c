@@ -200,7 +200,7 @@ class AntiGamingChecker:
         # Check 1: Section coverage
         sections_found = 0
         for section in self.STANDARD_README_SECTIONS:
-            if re.search(rf'#{{\s*{section}', readme, re.IGNORECASE):
+            if re.search(rf'#\s*{section}', readme, re.IGNORECASE):
                 sections_found += 1
         
         details["sections_found"] = sections_found
